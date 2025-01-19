@@ -1,8 +1,15 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, MathUtils, Mesh, MeshLambertMaterial, NearestFilter, SRGBColorSpace, TextureLoader } from 'three';
-import { ThreeJsDevelopmentEnvironment } from '../test1/dev-env';
+import { AmbientLight, BufferAttribute, BufferGeometry, DirectionalLight, MathUtils, Mesh, MeshLambertMaterial, NearestFilter, SRGBColorSpace, TextureLoader } from 'three';
 import { rng } from '../utils';
+import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
-const env = new ThreeJsDevelopmentEnvironment(document.getElementById('ROOT_DIV')!);
+const env = new ThreeJsBoilerPlate();
+env.appendTo(document.getElementById('ROOT_DIV')!);
+
+env.scene.add(new AmbientLight());
+env.scene.add(new DirectionalLight());
+
+const controls = new OrbitControls(env.camera, env.renderer.domElement);
 
 interface VoxelWorldParams {
     cellSize: number;
@@ -278,7 +285,7 @@ env.clock.run((deltaTime: number) => {
 
     // update scene:
 
-    env.controls.update(deltaTime);
+    controls.update(deltaTime);
     env.renderer.render(env.scene, env.camera);
     env.clock.showStats({});
 });

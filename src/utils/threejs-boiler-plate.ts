@@ -1,40 +1,47 @@
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import { Clock } from '../utils';
+import { PerspectiveCamera, Scene, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { Clock } from './clock';
+import { Emitter } from './emitter';
 
-export class ThreeJsDevelopmentEnvironment {
-    public ambientLight: AmbientLight;
-    public camera: PerspectiveCamera;
+export interface ThreeJsBoilerPlateParams {
+    parentElement?: HTMLElement,
+    renderer?: WebGLRendererParameters,
+    camera?: {
+        fov?: number,
+        aspect?: number,
+        near?: number,
+        far?: number,
+    }
+}
+
+export class ThreeJsBoilerPlate extends Emitter {
     public clock: Clock;
-    public controls: OrbitControls;
-    public directionalLight;
     public renderer: WebGLRenderer;
+    public camera: PerspectiveCamera;
     public scene: Scene;
 
     public get canvas(): HTMLCanvasElement {
         return this.renderer.domElement;
     }
 
-    constructor(parentElement: HTMLElement) {
+    constructor(params?: ThreeJsBoilerPlateParams) {
+        super();
+
         this.clock = new Clock();
 
-        this.renderer = new WebGLRenderer({ antialias: true });
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer = new WebGLRenderer(params?.renderer);
 
-        this.camera = new PerspectiveCamera(75, 2, 0.1, 1000.0);
-        this.camera.position.z = 5;
-
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.target.set(0, 0, 0);
-
-        this.ambientLight = new AmbientLight();
-        this.directionalLight = new DirectionalLight();
+        this.camera = new PerspectiveCamera(
+            params?.camera?.fov ?? 75,
+            params?.camera?.aspect ?? 2,
+            params?.camera?.near ?? 0.1,
+            params?.camera?.far ?? 1000.0,
+        );
 
         this.scene = new Scene();
-        this.scene.add(this.ambientLight);
-        this.scene.add(this.directionalLight);
 
-        this.appendTo(parentElement);
+        if (params?.parentElement) {
+            this.appendTo(params.parentElement);
+        }
     }
 
     public appendTo(htmlElement?: HTMLElement) {
@@ -57,14 +64,16 @@ export class ThreeJsDevelopmentEnvironment {
         displayWidth = (0 | (displayWidth ?? width));
         displayHeight = (0 | (displayHeight ?? height));
 
+        let resized: boolean = false;
+
         if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
             this.renderer.setSize(displayWidth, displayHeight);
             this.camera.aspect = displayWidth / displayHeight;
             this.camera.updateProjectionMatrix();
 
-            return true;
+            resized = true;
         }
 
-        return false;
+        return resized;
     }
 }
