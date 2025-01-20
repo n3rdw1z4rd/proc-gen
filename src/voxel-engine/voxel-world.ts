@@ -1,6 +1,8 @@
-import { BufferAttribute, BufferGeometry, Group, Material, MathUtils, Mesh, MeshPhongMaterial, NearestFilter, Texture, TextureLoader, Vector3 } from 'three';
-import { logwrn } from '../utils/logger';
-import { rng } from '../utils/rng';
+import { BufferAttribute, BufferGeometry, Group, Material, MathUtils, Mesh, MeshPhongMaterial, NearestFilter, Texture, TextureLoader } from 'three';
+import { log, logwrn } from '../utils/logger';
+import { FACES } from './constants';
+
+const KEY_POS_DELIMITER = 'x';
 
 export type POS = [number, number, number];
 export type ChunkData = Uint8Array;
@@ -13,7 +15,8 @@ export interface Chunk {
 }
 
 export class World extends Group {
-    private _chunkSize: number = 16;
+    private _chunkSize: number = 4;
+    private _chunkRenderRange: number = 1;
 
     private _voxelTextureSize: number = 16;
 
@@ -27,9 +30,13 @@ export class World extends Group {
         super();
 
         if (textureUrl) this.loadTexture(textureUrl);
+
+        log('World created');
     }
 
     public loadTexture(url: string) {
+        log('loadTexture:', url);
+
         (new TextureLoader()).load(url, (texture: Texture) => {
             texture.magFilter = NearestFilter;
 
@@ -37,23 +44,31 @@ export class World extends Group {
             this._textureHeight = texture.source.data.height;
 
             this._material = new MeshPhongMaterial({
-                map: texture,
-                alphaTest: 0.1,
-                transparent: true,
+                // map: texture,
+                // alphaTest: 0.1,
+                // transparent: true,
+                color: 0xff0000,
             });
         });
     }
 
-    public update(_deltaTime: number, position: POS | Vector3 = [0, 0, 0]) {
-        if (position instanceof Vector3) position = position.toArray();
+    public update(_deltaTime: number) {
+        const position = this.position.toArray();
 
-        if (!this._getChunk(position)) {
-            this._generateChunk(position);
+        const offset = this._chunkRenderRange * this._chunkSize;
+
+        for (let x = -offset; x <= offset; x += this._chunkSize) {
+            for (let z = -offset; z <= offset; z += this._chunkSize) {
+                const pos: POS = [position[0] + x, 0, position[2] + z];
+                if (!this._getChunk(pos)) this._generateChunk(pos);
+            }
         }
     }
 
     private _computeChunkKey(position: POS): string {
-        return (position.map((value: number) => Math.floor(value / this._chunkSize)) as POS).join('x');
+        const key = (position.map((value: number) => Math.floor(value / this._chunkSize)) as POS).join(KEY_POS_DELIMITER);
+        // log('_computeChunkKey:', position, '>', key);
+        return key;
     }
 
     private _getChunk(position: POS): Chunk | null {
@@ -94,27 +109,28 @@ export class World extends Group {
             if (i >= 0 && i < chunk.data.length) {
                 value = chunk.data[i];
             }
-        } else logwrn('getVoxel: missing chunk at:', position);
+        } //else logwrn('getVoxel: missing chunk at:', position);
 
         return value;
     }
 
     private _generateChunkTerrain(chunk: Chunk) {
-        for (let y = 0; y < this._chunkSize; ++y) {
-            for (let z = 0; z < this._chunkSize; ++z) {
-                for (let x = 0; x < this._chunkSize; ++x) {
-                    const height = (Math.sin(x / this._chunkSize * Math.PI * 2) + Math.sin(z / this._chunkSize * Math.PI * 3)) * (this._chunkSize / 6) + (this._chunkSize / 2);
+        // for (let y = 0; y < this._chunkSize; ++y) {
+        //     for (let z = 0; z < this._chunkSize; ++z) {
+        //         for (let x = 0; x < this._chunkSize; ++x) {
+        //             const height = (Math.sin(x / this._chunkSize * Math.PI * 2) + Math.sin(z / this._chunkSize * Math.PI * 3)) * (this._chunkSize / 6) + (this._chunkSize / 2);
 
-                    if (y < height) {
-                        const i = this._computeChunkIndex([x, y, z]);
+        //             if (y < height) {
+        //                 const i = this._computeChunkIndex([x, y, z]);
 
-                        if (i >= 0 && i < chunk.data.length) {
-                            chunk.data[i] = rng.range(1, 17);
-                        }
-                    }
-                }
-            }
-        }
+        //                 if (i >= 0 && i < chunk.data.length) {
+        //                     chunk.data[i] = rng.range(1, 17);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        chunk.data.fill(7);
     }
 
     private _generateChunkGeometry(chunk: Chunk) {
@@ -188,6 +204,8 @@ export class World extends Group {
 
     private _generateChunk(position: POS) {
         if (this._material) {
+            log('generateChunk:', position);
+
             const chunk: Chunk = {
                 position: position.map((value: number) => Math.floor(value / this._chunkSize)) as POS,
                 data: new Uint8Array(this._chunkSize * this._chunkSize * this._chunkSize),
@@ -195,79 +213,26 @@ export class World extends Group {
                 mesh: null,
             };
 
-            this._chunks.set(chunk.position.join('x'), chunk);
+            const chunkKey = chunk.position.join(KEY_POS_DELIMITER);
+            this._chunks.set(chunkKey, chunk);
 
             this._generateChunkTerrain(chunk);
             this._generateChunkGeometry(chunk);
+            // chunk.geometry = new BoxGeometry(this._chunkSize, this._chunkSize, this._chunkSize);
 
             chunk.mesh = new Mesh(chunk.geometry, this._material);
-            chunk.mesh.position.x -= (this._chunkSize / 2);
-            chunk.mesh.position.z -= (this._chunkSize / 2);
+            chunk.mesh.name = chunkKey;
+
+            chunk.mesh.position.set(
+                (chunk.position[0] * this._chunkSize),
+                (chunk.position[1] * this._chunkSize),
+                (chunk.position[2] * this._chunkSize),
+            );
+
+            // chunk.mesh.position.x -= (this._chunkSize / 2);
+            // chunk.mesh.position.z -= (this._chunkSize / 2);
 
             this.add(chunk.mesh);
-        }
+        } else logwrn('_generateChunk: no texture loaded!');
     }
 }
-
-const FACES = [
-    { // left
-        uvRow: 0,
-        dir: [-1, 0, 0,],
-        corners: [
-            { pos: [0, 1, 0], uv: [0, 1], },
-            { pos: [0, 0, 0], uv: [0, 0], },
-            { pos: [0, 1, 1], uv: [1, 1], },
-            { pos: [0, 0, 1], uv: [1, 0], },
-        ],
-    },
-    { // right
-        uvRow: 0,
-        dir: [1, 0, 0,],
-        corners: [
-            { pos: [1, 1, 1], uv: [0, 1], },
-            { pos: [1, 0, 1], uv: [0, 0], },
-            { pos: [1, 1, 0], uv: [1, 1], },
-            { pos: [1, 0, 0], uv: [1, 0], },
-        ],
-    },
-    { // bottom
-        uvRow: 1,
-        dir: [0, -1, 0,],
-        corners: [
-            { pos: [1, 0, 1], uv: [1, 0], },
-            { pos: [0, 0, 1], uv: [0, 0], },
-            { pos: [1, 0, 0], uv: [1, 1], },
-            { pos: [0, 0, 0], uv: [0, 1], },
-        ],
-    },
-    { // top
-        uvRow: 2,
-        dir: [0, 1, 0,],
-        corners: [
-            { pos: [0, 1, 1], uv: [1, 1], },
-            { pos: [1, 1, 1], uv: [0, 1], },
-            { pos: [0, 1, 0], uv: [1, 0], },
-            { pos: [1, 1, 0], uv: [0, 0], },
-        ],
-    },
-    { // back
-        uvRow: 0,
-        dir: [0, 0, -1,],
-        corners: [
-            { pos: [1, 0, 0], uv: [0, 0], },
-            { pos: [0, 0, 0], uv: [1, 0], },
-            { pos: [1, 1, 0], uv: [0, 1], },
-            { pos: [0, 1, 0], uv: [1, 1], },
-        ],
-    },
-    { // front
-        uvRow: 0,
-        dir: [0, 0, 1,],
-        corners: [
-            { pos: [0, 0, 1], uv: [0, 0], },
-            { pos: [1, 0, 1], uv: [1, 0], },
-            { pos: [0, 1, 1], uv: [0, 1], },
-            { pos: [1, 1, 1], uv: [1, 1], },
-        ],
-    },
-];

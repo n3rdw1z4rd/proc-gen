@@ -1,6 +1,7 @@
-import { PerspectiveCamera, Scene, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { BoxGeometry, ColorRepresentation, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
+import { Input } from './input';
 
 export interface ThreeJsBoilerPlateParams {
     parentElement?: HTMLElement,
@@ -18,6 +19,12 @@ export class ThreeJsBoilerPlate extends Emitter {
     public renderer: WebGLRenderer;
     public camera: PerspectiveCamera;
     public scene: Scene;
+    public input: Input;
+
+    private _pickingEnabled: boolean = false;
+    public raycaster: Raycaster;
+    public pickMousePosition: Vector2 = new Vector2();
+    // public picked: Object3D | null = null;
 
     public get canvas(): HTMLCanvasElement {
         return this.renderer.domElement;
@@ -42,6 +49,10 @@ export class ThreeJsBoilerPlate extends Emitter {
         if (params?.parentElement) {
             this.appendTo(params.parentElement);
         }
+
+        this.input = new Input();
+
+        this.raycaster = new Raycaster();
     }
 
     public appendTo(htmlElement?: HTMLElement) {
@@ -75,5 +86,49 @@ export class ThreeJsBoilerPlate extends Emitter {
         }
 
         return resized;
+    }
+
+    // private _handleMouseMove(event: MouseEvent) {
+    //     const rect = this.renderer.domElement.getBoundingClientRect();
+
+    //     const x = (event.clientX - rect.left) * this.renderer.domElement.width / rect.width;
+    //     const y = (event.clientY - rect.top) * this.renderer.domElement.height / rect.height;
+
+    //     this.pickMousePosition.x = (x / this.renderer.domElement.width) * 2 - 1;
+    //     this.pickMousePosition.y = (y / this.renderer.domElement.width) * -2 + 1;
+    // }
+
+    // public enablePicking() {
+    //     window.addEventListener('mousemove', this._handleMouseMove.bind(this));
+    //     this._pickingEnabled = true;
+    // }
+
+    // public disablePicking() {
+    //     window.removeEventListener('mousemove', this._handleMouseMove.bind(this));
+    //     this._pickingEnabled = false;
+    // }
+
+    public pick(mousePosition: [number, number]): Object3D | null {
+        const pickX = (mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
+        const pickY = (mousePosition[1] / this.renderer.domElement.height) * -2 + 1;  // note we flip Y
+
+        let obj: Object3D | null = null;
+
+        this.raycaster.setFromCamera(new Vector2(pickX, pickY), this.camera);
+
+        const intersected = this.raycaster.intersectObjects(this.scene.children);
+
+        if (intersected.length) {
+            obj = intersected[0].object;
+        }
+
+        return obj;
+    }
+
+    public static CreateCubeMesh(size: number = 1, color: ColorRepresentation = 0xff0000): Mesh {
+        return new Mesh(
+            new BoxGeometry(size, size, size),
+            new MeshBasicMaterial({ color }),
+        );
     }
 }
