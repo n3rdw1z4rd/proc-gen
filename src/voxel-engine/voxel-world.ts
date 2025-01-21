@@ -166,6 +166,7 @@ export class World extends Group {
                                     positions.push(pos[0] + x, pos[1] + y, pos[2] + z);
 
                                     normals.push(...dir);
+
                                     uvs.push(
                                         (uvVoxel + uv[0]) * this._voxelTextureSize / this._textureWidth,
                                         1 - (uvRow + 1 - uv[1]) * this._voxelTextureSize / this._textureHeight,
@@ -234,7 +235,7 @@ export class World extends Group {
             this._generateChunkGeometry(chunk);
 
             chunk.mesh = new Mesh(chunk.geometry, this._material);
-            chunk.mesh.name = position.join(KEY_POS_DELIMITER);
+            chunk.mesh.name = chunk.position.join(KEY_POS_DELIMITER);
 
             chunk.mesh.position.set(
                 (chunk.position[0] * this._chunkSize),
