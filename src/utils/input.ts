@@ -1,5 +1,4 @@
 import { Emitter } from './emitter';
-import { log } from './logger';
 
 export class Input extends Emitter {
     private _mousePosition: [number, number] = [0, 0];
@@ -12,8 +11,6 @@ export class Input extends Emitter {
     }
 
     private _onMouseMove(event: MouseEvent) {
-        log('_onMouseMove:', event);
-
         let x = event.clientX;
         let y = event.clientY;
 

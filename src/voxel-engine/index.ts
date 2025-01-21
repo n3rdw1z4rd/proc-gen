@@ -1,4 +1,4 @@
-import { AmbientLight, DirectionalLight, GridHelper } from 'three';
+import { AmbientLight, DirectionalLight, GridHelper, Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
@@ -23,17 +23,21 @@ const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 const world = new World('/flourish-cc-by-nc-sa.png');
 eng.scene.add(world);
 
+const playerPosition = new Vector3(world.chunkSize / 2, 0, world.chunkSize / 2);
+
 eng.clock.run((deltaTime: number) => {
     eng.resize();
 
     controls.update(deltaTime);
 
-    world.update(deltaTime);
+    world.update(deltaTime, playerPosition);
 
     eng.renderer.render(eng.scene, eng.camera);
 
     eng.clock.showStats({
-        position: eng.input.mousePosition,
+        chunks: world.chunkCount,
+        player: playerPosition.toArray(),
+        mouse: eng.input.mousePosition,
         picked: eng.pick(eng.input.mousePosition)?.name ?? null,
     });
 });
