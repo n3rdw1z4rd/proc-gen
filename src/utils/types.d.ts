@@ -1,3 +1,6 @@
+declare type VEC2 = [number, number];
+declare type VEC3 = [number, number, number];
+
 declare type KeyValue = { [key: string]: any };
 
 type JSONValue =
@@ -32,4 +35,3 @@ declare module "*.frag" {
     const value: string;
     export default value;
 }
-
