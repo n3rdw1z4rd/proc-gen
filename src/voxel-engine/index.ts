@@ -17,9 +17,6 @@ eng.scene.add(new GridHelper(100, 100));
 
 const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
-/**
- * TODO: Move the World object instead of the player, the player should always be at the center of the screen anyway.
- */
 const world = new World('/flourish-cc-by-nc-sa.png');
 eng.scene.add(world);
 
