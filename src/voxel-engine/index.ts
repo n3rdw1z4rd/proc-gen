@@ -38,6 +38,6 @@ eng.clock.run((deltaTime: number) => {
         chunks: world.chunkCount,
         player: playerPosition.toArray(),
         mouse: eng.mousePosition,
-        picked: eng.pick(eng.input.mousePosition)?.name ?? null,
+        picked: eng.pick()?.name ?? null,
     });
 });

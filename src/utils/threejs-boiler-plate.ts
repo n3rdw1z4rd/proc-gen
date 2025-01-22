@@ -39,8 +39,7 @@ export class ThreeJsBoilerPlate extends Emitter {
     private _mousePosition: VEC2 = [0, 0];
     public get mousePosition(): VEC2 { return this._mousePosition; }
 
-    private _pickingEnabled: boolean = false;
-    public raycaster: Raycaster;
+    public raycaster: Raycaster | undefined;
 
     public get canvas(): HTMLCanvasElement {
         return this.renderer.domElement;
@@ -74,8 +73,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         window.addEventListener('wheel', this._onWheel.bind(this));
         // TODO: add gamepad states
         // TODO: add touch states
-
-        this.raycaster = new Raycaster();
     }
 
     private _getCommonEventProps(ev: KeyboardEvent | MouseEvent | WheelEvent): CommonEventProps {
@@ -161,7 +158,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         // TODO: needs implementation
     }
 
-
     public appendTo(htmlElement?: HTMLElement) {
         if (this.canvas.parentElement) {
             this.canvas.parentElement.removeChild(this.canvas);
@@ -195,19 +191,13 @@ export class ThreeJsBoilerPlate extends Emitter {
         return resized;
     }
 
-    // public enablePicking() {
-    //     window.addEventListener('mousemove', this._handleMouseMove.bind(this));
-    //     this._pickingEnabled = true;
-    // }
+    public pick(): Object3D | null {
+        if (!this.raycaster) {
+            this.raycaster = new Raycaster();
+        }
 
-    // public disablePicking() {
-    //     window.removeEventListener('mousemove', this._handleMouseMove.bind(this));
-    //     this._pickingEnabled = false;
-    // }
-
-    public pick(mousePosition: VEC2): Object3D | null {
-        const pickX = (mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
-        const pickY = (mousePosition[1] / this.renderer.domElement.height) * -2 + 1;  // note we flip Y
+        const pickX = (this._mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
+        const pickY = (this._mousePosition[1] / this.renderer.domElement.height) * -2 + 1;
 
         let obj: Object3D | null = null;
 
@@ -216,7 +206,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         const intersected = this.raycaster.intersectObjects(this.scene.children);
 
         if (intersected.length) {
-            // log('intersected:', intersected[0]);
             obj = intersected[0].object;
         }
 
