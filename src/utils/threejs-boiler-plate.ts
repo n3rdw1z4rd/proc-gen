@@ -1,7 +1,19 @@
 import { BoxGeometry, ColorRepresentation, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
-import { Input } from './input';
+
+export interface CommonEventProps {
+    timeStamp: number,
+    altKey: boolean,
+    ctrlKey: boolean,
+    metaKey: boolean,
+    shiftKey: boolean,
+}
+
+export interface InputState {
+    state: number,
+    timeStamp: number,
+}
 
 export interface ThreeJsBoilerPlateParams {
     parentElement?: HTMLElement,
@@ -19,12 +31,16 @@ export class ThreeJsBoilerPlate extends Emitter {
     public renderer: WebGLRenderer;
     public camera: PerspectiveCamera;
     public scene: Scene;
-    public input: Input;
+
+    public inputThreshold: number = 200;
+    private _keyStates: { [key: string]: InputState } = {};
+    private _mouseButtonStates: { [key: string]: InputState } = {};
+
+    private _mousePosition: VEC2 = [0, 0];
+    public get mousePosition(): VEC2 { return this._mousePosition; }
 
     private _pickingEnabled: boolean = false;
     public raycaster: Raycaster;
-    public pickMousePosition: Vector2 = new Vector2();
-    // public picked: Object3D | null = null;
 
     public get canvas(): HTMLCanvasElement {
         return this.renderer.domElement;
@@ -50,10 +66,101 @@ export class ThreeJsBoilerPlate extends Emitter {
             this.appendTo(params.parentElement);
         }
 
-        this.input = new Input();
+        window.addEventListener('keydown', this._onKeyDown.bind(this));
+        window.addEventListener('keyup', this._onKeyUp.bind(this));
+        window.addEventListener('mousedown', this._onMouseButtonDown.bind(this));
+        window.addEventListener('mouseup', this._onMouseButtonUp.bind(this));
+        window.addEventListener('mousemove', this._onMouseMove.bind(this));
+        window.addEventListener('wheel', this._onWheel.bind(this));
+        // TODO: add gamepad states
+        // TODO: add touch states
 
         this.raycaster = new Raycaster();
     }
+
+    private _getCommonEventProps(ev: KeyboardEvent | MouseEvent | WheelEvent): CommonEventProps {
+        const props: CommonEventProps = {
+            timeStamp: ev.timeStamp,
+            altKey: ev.altKey,
+            ctrlKey: ev.ctrlKey,
+            metaKey: ev.metaKey,
+            shiftKey: ev.shiftKey,
+        };
+
+        return props;
+    }
+
+    private _onKeyDown(ev: KeyboardEvent) {
+        const props = this._getCommonEventProps(ev);
+
+        const { code, key } = ev;
+
+        if (!ev.repeat) {
+            this._keyStates[code] = { state: 1, timeStamp: props.timeStamp };
+            this.emit('key_down', { ...props, code, key });
+        }
+    }
+
+    private _onKeyUp(ev: KeyboardEvent) {
+        const props = this._getCommonEventProps(ev);
+
+        const { code, key } = ev;
+        const deltaStamp = props.timeStamp - (this._keyStates[code]?.timeStamp ?? 0);
+
+        this._keyStates[code] = { state: 0, timeStamp: props.timeStamp };
+        this.emit('key_up', { ...props, code, key });
+
+        if (deltaStamp < this.inputThreshold) {
+            this.emit('key_pressed', { ...props, code, key });
+        }
+    }
+
+    private _onMouseButtonDown(ev: MouseEvent) {
+        const props = this._getCommonEventProps(ev);
+
+        const { button } = ev;
+
+        if (!this._mouseButtonStates[button]?.state) {
+            this._mouseButtonStates[button] = { state: 1, timeStamp: props.timeStamp };
+            this.emit('mouse_buttone_down', { ...props, button });
+        }
+    }
+
+    private _onMouseButtonUp(ev: MouseEvent) {
+        const props = this._getCommonEventProps(ev);
+
+        const { button } = ev;
+        const deltaStamp = props.timeStamp - (this._mouseButtonStates[button]?.timeStamp ?? 0);
+
+        this._mouseButtonStates[button] = { state: 0, timeStamp: props.timeStamp };
+        this.emit('mouse_button_up', { ...props, button });
+
+        if (deltaStamp < this.inputThreshold) {
+            this.emit('mouse_button_pressed', { ...props, button });
+        }
+    }
+
+    private _onMouseMove(ev: MouseEvent) {
+        const props = this._getCommonEventProps(ev);
+
+        const { buttons, offsetX, offsetY, movementX, movementY } = ev;
+
+        this._mousePosition = [offsetX, offsetY];
+
+        this.emit('mouse_move', {
+            ...props,
+            buttons,
+            x: offsetX,
+            y: offsetY,
+            deltaX: movementX,
+            deltaY: movementY,
+        })
+    }
+
+    private _onWheel(ev: WheelEvent) {
+        // TODO: needs implementation
+    }
+
 
     public appendTo(htmlElement?: HTMLElement) {
         if (this.canvas.parentElement) {
@@ -88,16 +195,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         return resized;
     }
 
-    // private _handleMouseMove(event: MouseEvent) {
-    //     const rect = this.renderer.domElement.getBoundingClientRect();
-
-    //     const x = (event.clientX - rect.left) * this.renderer.domElement.width / rect.width;
-    //     const y = (event.clientY - rect.top) * this.renderer.domElement.height / rect.height;
-
-    //     this.pickMousePosition.x = (x / this.renderer.domElement.width) * 2 - 1;
-    //     this.pickMousePosition.y = (y / this.renderer.domElement.width) * -2 + 1;
-    // }
-
     // public enablePicking() {
     //     window.addEventListener('mousemove', this._handleMouseMove.bind(this));
     //     this._pickingEnabled = true;
@@ -108,7 +205,7 @@ export class ThreeJsBoilerPlate extends Emitter {
     //     this._pickingEnabled = false;
     // }
 
-    public pick(mousePosition: [number, number]): Object3D | null {
+    public pick(mousePosition: VEC2): Object3D | null {
         const pickX = (mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
         const pickY = (mousePosition[1] / this.renderer.domElement.height) * -2 + 1;  // note we flip Y
 
@@ -119,6 +216,7 @@ export class ThreeJsBoilerPlate extends Emitter {
         const intersected = this.raycaster.intersectObjects(this.scene.children);
 
         if (intersected.length) {
+            // log('intersected:', intersected[0]);
             obj = intersected[0].object;
         }
 

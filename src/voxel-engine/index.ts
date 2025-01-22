@@ -37,7 +37,7 @@ eng.clock.run((deltaTime: number) => {
     eng.clock.showStats({
         chunks: world.chunkCount,
         player: playerPosition.toArray(),
-        mouse: eng.input.mousePosition,
+        mouse: eng.mousePosition,
         picked: eng.pick(eng.input.mousePosition)?.name ?? null,
     });
 });

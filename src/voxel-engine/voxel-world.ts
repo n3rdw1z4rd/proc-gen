@@ -4,11 +4,10 @@ import { rng } from '../utils/rng';
 
 const KEY_POS_DELIMITER = 'x';
 
-export type POS = [number, number, number];
 export type ChunkData = Uint8Array;
 
 export interface Chunk {
-    position: POS,
+    position: VEC3,
     data: ChunkData,
     geometry: BufferGeometry,
     mesh: Mesh | null,
@@ -19,7 +18,7 @@ export class World extends Group {
     public get chunkSize(): number { return this._chunkSize; }
 
     // TODO: use a "view radius" to find how many chunks to render instead of _chunkRenderRange
-    private _chunkRenderRange: number = 2;
+    private _chunkRenderRange: number = 1;
 
     private _voxelTextureSize: number = 16;
 
@@ -51,11 +50,11 @@ export class World extends Group {
         });
     }
 
-    private _getChunkKey(position: POS): string {
+    private _getChunkKey(position: VEC3): string {
         return position.join(KEY_POS_DELIMITER);
     }
 
-    private _createChunk(position: POS): Chunk {
+    private _createChunk(position: VEC3): Chunk {
         const chunk: Chunk = {
             position,
             data: new Uint8Array(this._chunkSize * this._chunkSize * this._chunkSize),
@@ -71,12 +70,12 @@ export class World extends Group {
         return chunk;
     }
 
-    private _getChunk(position: POS): Chunk | null {
+    private _getChunk(position: VEC3): Chunk | null {
         const key = this._getChunkKey(position);
         return this._chunks.get(key) ?? null;
     }
 
-    private _computeChunkIndex(position: POS) {
+    private _computeChunkIndex(position: VEC3) {
         let [x, y, z] = position;
 
         x = MathUtils.euclideanModulo(x, this._chunkSize) | 0;
@@ -98,23 +97,46 @@ export class World extends Group {
     //     }
     // }
 
-    public getVoxel(position: POS, chunk?: Chunk | null): number {
-        let value: number = 0;
-
-        if (!chunk) {
-            // TODO: convert position
-            // chunk = this._getChunk(position);
+    public getVoxel(position: VEC3 | Vector3): number {
+        if (!Array.isArray(position)) {
+            position = position.toArray() as VEC3;
         }
+
+        let voxel: number = 0;
+
+        position[0] /= this._chunkSize;
+        position[1] /= this._chunkSize;
+        position[2] /= this._chunkSize;
+
+        const chunk = this._getChunk([
+            position[0] | 0,
+            position[1] | 0,
+            position[2] | 0,
+        ]);
 
         if (chunk) {
             const i = this._computeChunkIndex(position);
 
             if (i >= 0 && i < chunk.data.length) {
-                value = chunk.data[i];
+                voxel = chunk.data[i];
             }
         }
 
-        return value;
+        return voxel;
+    }
+
+    private _getVoxelInChunk(chunk: Chunk | null, position: VEC3): number {
+        const i = this._computeChunkIndex(position);
+
+        let voxel: number = 0;
+
+        if (chunk) {
+            if (i >= 0 && i < chunk.data.length) {
+                voxel = chunk.data[i];
+            }
+        }
+
+        return voxel;
     }
 
     private _generateChunkTerrain(chunk: Chunk) {
@@ -146,20 +168,19 @@ export class World extends Group {
         for (let y = 0; y < this._chunkSize; ++y) {
             for (let z = 0; z < this._chunkSize; ++z) {
                 for (let x = 0; x < this._chunkSize; ++x) {
-                    const voxelPos: POS = [cx + x, cy + y, cz + z];
+                    const voxelPos: VEC3 = [cx + x, cy + y, cz + z];
 
-                    const voxel = this.getVoxel(voxelPos, chunk);
+                    const voxel = this._getVoxelInChunk(chunk, voxelPos);
 
                     if (voxel) {
                         const uvVoxel = voxel - 1;
 
                         for (const { dir, corners, uvRow } of FACES) {
-                            const neighborPos: POS = [voxelPos[0] + dir[0], voxelPos[1] + dir[1], voxelPos[2] + dir[2]];
+                            const neighborPos: VEC3 = [voxelPos[0] + dir[0], voxelPos[1] + dir[1], voxelPos[2] + dir[2]];
                             const neighborChunk = this._getChunk(neighborPos);
+                            const neighborVoxel = this._getVoxelInChunk(neighborChunk, neighborPos);
 
-                            const neighbor = this.getVoxel(neighborPos, neighborChunk);
-
-                            if (!neighbor) {
+                            if (!neighborVoxel) {
                                 const ndx = positions.length / 3;
 
                                 for (const { pos, uv } of corners) {
@@ -206,7 +227,7 @@ export class World extends Group {
         chunk.geometry.setIndex(indices);
     }
 
-    private _playerPositionToChunkPosition(playerPosition: Vector3 | POS): POS {
+    private _playerPositionToChunkPosition(playerPosition: Vector3 | VEC3): VEC3 {
         playerPosition = (playerPosition instanceof Vector3) ? playerPosition.toArray() : playerPosition;
 
         return [
@@ -216,13 +237,13 @@ export class World extends Group {
         ];
     }
 
-    private _generateChunks(position: POS) {
+    private _generateChunks(position: VEC3) {
         const offset = this._chunkRenderRange;
         const createdChunks = [];
 
         for (let x = -offset; x <= offset; x++) {
             for (let z = -offset; z <= offset; z++) {
-                const pos: POS = [position[0] + x, position[1], position[2] + z];
+                const pos: VEC3 = [position[0] + x, position[1], position[2] + z];
 
                 if (!this._getChunk(pos)) {
                     const chunk = this._createChunk(pos);
@@ -250,7 +271,7 @@ export class World extends Group {
         });
     }
 
-    public update(_deltaTime: number, playerPosition: Vector3 | POS) {
+    public update(_deltaTime: number, playerPosition: Vector3 | VEC3) {
         if (this._material) {
             const position = this._playerPositionToChunkPosition(playerPosition);
 
