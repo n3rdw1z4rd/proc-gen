@@ -1,6 +1,12 @@
-import { BoxGeometry, ColorRepresentation, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
+
+export interface SetupBasicSceneParams {
+    ambientLight?: boolean,
+    directionalLight?: boolean,
+    gridHelper?: boolean,
+}
 
 export interface CommonEventProps {
     timeStamp: number,
@@ -155,7 +161,13 @@ export class ThreeJsBoilerPlate extends Emitter {
     }
 
     private _onWheel(ev: WheelEvent) {
-        // TODO: needs implementation
+        const props = this._getCommonEventProps(ev);
+        const { deltaX, deltaY, deltaZ } = ev;
+
+        this.emit('mouse_wheel', {
+            ...props,
+            deltaX, deltaY, deltaZ,
+        });
     }
 
     public appendTo(htmlElement?: HTMLElement) {
@@ -191,25 +203,42 @@ export class ThreeJsBoilerPlate extends Emitter {
         return resized;
     }
 
-    public pick(): Object3D | null {
+    public setupBasicScene(params: SetupBasicSceneParams = {}) {
+        this.camera.position.z = 5;
+
+        if (params.ambientLight !== false) this.scene.add(new AmbientLight());
+        if (params.directionalLight !== false) this.scene.add(new DirectionalLight());
+        if (params.gridHelper !== false) this.scene.add(new GridHelper(100, 100, 0xff0000));
+    }
+
+    public pick(): Intersection | null {
         if (!this.raycaster) {
             this.raycaster = new Raycaster();
         }
 
         const pickX = (this._mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
-        const pickY = (this._mousePosition[1] / this.renderer.domElement.height) * -2 + 1;
-
-        let obj: Object3D | null = null;
+        const pickY = -(this._mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
 
         this.raycaster.setFromCamera(new Vector2(pickX, pickY), this.camera);
 
         const intersected = this.raycaster.intersectObjects(this.scene.children);
 
-        if (intersected.length) {
-            obj = intersected[0].object;
-        }
+        return intersected.length ? intersected[0] : null;
+    }
 
-        return obj;
+    public static LoadTexture(url: string): Promise<KeyValue> {
+        return new Promise<KeyValue>((res, rej) => {
+            (new TextureLoader()).load(
+                url,
+                (texture: Texture) => {
+                    const textureWidth = texture.source.data.width;
+                    const textureHeight = texture.source.data.height;
+                    res({ textureWidth, textureHeight, texture } as KeyValue);
+                },
+                (_ev) => { },
+                (err) => rej(err),
+            );
+        });
     }
 
     public static CreateCubeMesh(size: number = 1, color: ColorRepresentation = 0xff0000): Mesh {
