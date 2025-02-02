@@ -235,8 +235,16 @@ export class ThreeJsBoilerPlate extends Emitter {
         return this._keyStates[keyCode]?.state === 1 ? true : false;
     }
 
+    public getKeyState(keyCode: string): number {
+        return this._keyStates[keyCode]?.state ?? 0;
+    }
+
     public isMouseButtonDown(mouseButton: number): boolean {
         return this._mouseButtonStates[mouseButton]?.state === 1 ? true : false;
+    }
+
+    public getMouseButtonState(button: number): number {
+        return this._mouseButtonStates[button]?.state ?? 0;
     }
 
     public static LoadTexture(url: string): Promise<TextureData> {
