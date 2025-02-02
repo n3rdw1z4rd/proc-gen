@@ -211,8 +211,6 @@ export class ThreeJsBoilerPlate extends Emitter {
     }
 
     public setupBasicScene(params: SetupBasicSceneParams = {}) {
-        this.camera.position.z = 5;
-
         if (params.ambientLight !== false) this.scene.add(new AmbientLight());
         if (params.directionalLight !== false) this.scene.add(new DirectionalLight());
         if (params.gridHelper !== false) this.scene.add(new GridHelper(100, 100, 0xff0000));

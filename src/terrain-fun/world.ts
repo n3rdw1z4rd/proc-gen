@@ -2,6 +2,17 @@ import { Group, Material, Mesh, MeshLambertMaterial, PlaneGeometry, Vector3 } fr
 import { SimplexNoise } from '../utils/simplex-noise';
 import { log } from '../utils/logger';
 
+export interface WorldParams {
+    chunkSize?: number;
+    chunkResolution?: number;
+    viewDistance?: number;
+    material?: Material;
+    octaves?: number;
+    frequency?: number;
+    persistence?: number;
+    amplitude?: number;
+}
+
 export class World extends Group {
     chunkSize: number;
     chunkResolution: number;
@@ -18,19 +29,19 @@ export class World extends Group {
     chunks = new Map<string, Mesh>();
     noise = new SimplexNoise();
 
-    constructor() {
+    constructor(params?: WorldParams) {
         super();
 
-        this.chunkSize = 10;
-        this.chunkResolution = 1;
-        this.viewDistance = 1;
+        this.chunkSize = params?.chunkSize ?? 256;
+        this.chunkResolution = params?.chunkSize ?? Math.floor(this.chunkSize / 2);
+        this.viewDistance = params?.viewDistance ?? Math.floor(this.chunkSize / 4);
 
-        this.octaves = 4;
-        this.frequency = 0.5;
-        this.persistence = 0.5;
-        this.amplitude = 1.0;
+        this.octaves = params?.octaves ?? 4;
+        this.frequency = params?.frequency ?? 0.5;
+        this.persistence = params?.persistence ?? 0.5;
+        this.amplitude = params?.amplitude ?? 1.0;
 
-        this.material = new MeshLambertMaterial({
+        this.material = params?.material ?? new MeshLambertMaterial({
             color: 0x00ff00,
             wireframe: true,
         });
@@ -76,11 +87,11 @@ export class World extends Group {
     }
 
     private _generateChunksForPosition(position: Vector3) {
-        const wx = Math.floor(position.x / this.chunkSize);
-        const wz = Math.floor(position.z / this.chunkSize);
+        for (let pdx = position.x - this.viewDistance; pdx <= position.x + this.viewDistance; pdx++) {
+            for (let pdz = position.z - this.viewDistance; pdz <= position.z + this.viewDistance; pdz++) {
+                const cx = Math.floor(pdx / this.chunkSize);
+                const cz = Math.floor(pdz / this.chunkSize);
 
-        for (let cx = wx - this.viewDistance; cx <= wx + this.viewDistance; cx++) {
-            for (let cz = wz - this.viewDistance; cz <= wz + this.viewDistance; cz++) {
                 if (!this.chunks.get(`${cx},${cz}`)) {
                     const chunk = new Mesh(
                         this._createChunkGeometry(cx, cz),
@@ -102,6 +113,6 @@ export class World extends Group {
     }
 
     update(_deltaTime: number, viewPosition: Vector3) {
-        this._generateChunksForPosition(viewPosition.clone());
+        this._generateChunksForPosition(viewPosition);
     }
 }
