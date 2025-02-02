@@ -116,6 +116,27 @@ export class SimplexNoise {
         return 70.0 * (n0 + n1 + n2);
     };
 
+    fractalNoise2d(
+        xin: number,
+        yin: number,
+        octaves: number = 4,
+        frequency: number = 1.0,
+        persistence: number = 0.5,
+        amplitude: number = 0.5,
+    ): number {
+        let height = 0.0;
+
+        for (let octave = 0; octave < octaves; octave++) {
+            const freq = frequency * Math.pow(2, octave);
+
+            height += this.noise2d(xin * freq, yin * freq) * (amplitude * Math.pow(persistence, octave));
+        }
+
+        height = height / (2 - 1 / Math.pow(2, octaves - 1));
+
+        return height;
+    }
+
     // 3D simplex noise
     noise3d(xin: number, yin: number, zin: number): number {
         let n0, n1, n2, n3; // Noise contributions from the four corners

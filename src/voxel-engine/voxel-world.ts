@@ -1,6 +1,7 @@
 import { BufferAttribute, BufferGeometry, Group, Material, MathUtils, Mesh, MeshPhongMaterial, NearestFilter, Texture, TextureLoader, Vector3 } from 'three';
 import { FACES } from './constants';
 import { rng } from '../utils/rng';
+import { log } from '../utils/logger';
 
 const KEY_POS_DELIMITER = 'x';
 
@@ -14,11 +15,11 @@ export interface Chunk {
 }
 
 export class World extends Group {
-    private _chunkSize: number = 4;
+    private _chunkSize: number = 2;
     public get chunkSize(): number { return this._chunkSize; }
 
     // TODO: use a "view radius" to find how many chunks to render instead of _chunkRenderRange
-    private _chunkRenderRange: number = 1;
+    private _chunkRenderRange: number = 0;
 
     private _voxelTextureSize: number = 16;
 
@@ -102,6 +103,8 @@ export class World extends Group {
             position = position.toArray() as VEC3;
         }
 
+        log('getVoxel:', position);
+
         let voxel: number = 0;
 
         position[0] /= this._chunkSize;
@@ -143,7 +146,8 @@ export class World extends Group {
         for (let y = 0; y < this._chunkSize; ++y) {
             for (let z = 0; z < this._chunkSize; ++z) {
                 for (let x = 0; x < this._chunkSize; ++x) {
-                    const height = (Math.sin(x / this._chunkSize * Math.PI * 2) + Math.sin(z / this._chunkSize * Math.PI * 3)) * (this._chunkSize / 6) + (this._chunkSize / 2);
+                    const height = this._chunkSize
+                    // (Math.sin(x / this._chunkSize * Math.PI * 2) + Math.sin(z / this._chunkSize * Math.PI * 3)) * (this._chunkSize / 6) + (this._chunkSize / 2);
 
                     if (y < height) {
                         const i = this._computeChunkIndex([x, y, z]);

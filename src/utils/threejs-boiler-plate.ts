@@ -1,6 +1,13 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
+import './main.css';
+
+export interface TextureData {
+    width: number,
+    height: number,
+    texture: Texture,
+}
 
 export interface SetupBasicSceneParams {
     ambientLight?: boolean,
@@ -40,7 +47,7 @@ export class ThreeJsBoilerPlate extends Emitter {
 
     public inputThreshold: number = 200;
     private _keyStates: { [key: string]: InputState } = {};
-    private _mouseButtonStates: { [key: string]: InputState } = {};
+    private _mouseButtonStates: { [key: number]: InputState } = {};
 
     private _mousePosition: VEC2 = [0, 0];
     public get mousePosition(): VEC2 { return this._mousePosition; }
@@ -226,14 +233,22 @@ export class ThreeJsBoilerPlate extends Emitter {
         return intersected.length ? intersected[0] : null;
     }
 
-    public static LoadTexture(url: string): Promise<KeyValue> {
-        return new Promise<KeyValue>((res, rej) => {
+    public isKeyDown(keyCode: string): boolean {
+        return this._keyStates[keyCode]?.state === 1 ? true : false;
+    }
+
+    public isMouseButtonDown(mouseButton: number): boolean {
+        return this._keyStates[mouseButton]?.state === 1 ? true : false;
+    }
+
+    public static LoadTexture(url: string): Promise<TextureData> {
+        return new Promise<TextureData>((res, rej) => {
             (new TextureLoader()).load(
                 url,
                 (texture: Texture) => {
-                    const textureWidth = texture.source.data.width;
-                    const textureHeight = texture.source.data.height;
-                    res({ textureWidth, textureHeight, texture } as KeyValue);
+                    const width = texture.source.data.width;
+                    const height = texture.source.data.height;
+                    res({ width, height, texture });
                 },
                 (_ev) => { },
                 (err) => rej(err),

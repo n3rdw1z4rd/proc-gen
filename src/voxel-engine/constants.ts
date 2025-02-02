@@ -60,3 +60,23 @@ export const FACES = [
         ],
     },
 ];
+
+export const BLOCKS = [
+    'Air',
+    'Jack-o-Lantern',
+    'Cactus',
+    'Bubbles',
+    'Rock',
+    'MossyRock',
+    'Drawers',
+    'Dirt',
+    'Dirt2',
+    'Cage',
+    'Log',
+    'GreenThing',
+    'Bubbles2',
+    'Water',
+    'GrassDirt2',
+    'Gravel',
+    'Planks',
+];
