@@ -1,6 +1,7 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import './main.css';
 
 export interface TextureData {
@@ -9,10 +10,14 @@ export interface TextureData {
     texture: Texture,
 }
 
+export type OnFrameFunction = (deltaTime: number) => void;
+
 export interface SetupBasicSceneParams {
     ambientLight?: boolean,
     directionalLight?: boolean,
     gridHelper?: boolean,
+    orbitContols?: boolean,
+    onFrame?: OnFrameFunction,
 }
 
 export interface CommonEventProps {
@@ -211,9 +216,26 @@ export class ThreeJsBoilerPlate extends Emitter {
     }
 
     public setupBasicScene(params: SetupBasicSceneParams = {}) {
+        this.camera.position.z = 5;
+
         if (params.ambientLight !== false) this.scene.add(new AmbientLight());
         if (params.directionalLight !== false) this.scene.add(new DirectionalLight());
         if (params.gridHelper !== false) this.scene.add(new GridHelper(100, 100, 0xff0000));
+
+        const controls: OrbitControls | null = (params.orbitContols !== false)
+            ? new OrbitControls(this.camera, this.renderer.domElement)
+            : null;
+
+        this.clock.run((deltaTime: number) => {
+            this.resize();
+            controls?.update(deltaTime);
+
+            if (params.onFrame) {
+                params.onFrame(deltaTime);
+            }
+
+            this.renderer.render(this.scene, this.camera);
+        });
     }
 
     public pick(): Intersection | null {
