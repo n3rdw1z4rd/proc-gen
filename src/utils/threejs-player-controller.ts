@@ -2,7 +2,7 @@ import { Group, PerspectiveCamera, Vector3 } from 'three';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
 
 export class ThreeJsPlayerController extends Group {
-    moveSpeed: number;
+    moveSpeed: number = 1.0;
     cameraRig: ThreeJsCameraRig;
     velocity: Vector3;
 
@@ -11,10 +11,7 @@ export class ThreeJsPlayerController extends Group {
 
         this.velocity = new Vector3();
         this.cameraRig = new ThreeJsCameraRig(camera);
-        this.cameraRig.position.y = 5;
         this.add(this.cameraRig);
-
-        this.moveSpeed = 32;
     }
 
     update(deltaTime: number) {

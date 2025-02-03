@@ -1,4 +1,4 @@
-import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
 import './main.css';
@@ -132,7 +132,7 @@ export class ThreeJsBoilerPlate extends Emitter {
 
         if (!this._mouseButtonStates[button]?.state) {
             this._mouseButtonStates[button] = { state: 1, timeStamp: props.timeStamp };
-            this.emit('mouse_buttone_down', { ...props, button });
+            this.emit('mouse_button_down', { ...props, button });
         }
     }
 
@@ -146,7 +146,7 @@ export class ThreeJsBoilerPlate extends Emitter {
         this.emit('mouse_button_up', { ...props, button });
 
         if (deltaStamp < this.inputThreshold) {
-            this.emit('mouse_button_pressed', { ...props, button });
+            this.emit('mouse_button_clicked', { ...props, button });
         }
     }
 
@@ -265,7 +265,14 @@ export class ThreeJsBoilerPlate extends Emitter {
     public static CreateCubeMesh(size: number = 1, color: ColorRepresentation = 0xff0000): Mesh {
         return new Mesh(
             new BoxGeometry(size, size, size),
-            new MeshBasicMaterial({ color }),
+            new MeshLambertMaterial({ color }),
+        );
+    }
+
+    public static CreatePlaneMesh(size: number = 10, segments: number = 10, color: ColorRepresentation = 0xff0000): Mesh {
+        return new Mesh(
+            new PlaneGeometry(size, size, segments, segments),
+            new MeshLambertMaterial({ color, wireframe: true }),
         );
     }
 }

@@ -8,8 +8,8 @@ export class ThreeJsCameraRig extends Group {
     mouseSensitivity: number = 0.01;
     wheelSensitivity: number = 0.02;
 
-    minCameraDistance: number = 0.1;
-    maxCameraDistance: number = 50.0;
+    minCameraDistance: number = 1;
+    maxCameraDistance: number = 100.0;
 
     min_angle: number = deg2rad(-90);
     max_angle: number = deg2rad(0);
