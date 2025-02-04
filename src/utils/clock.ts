@@ -8,7 +8,7 @@ export class Stats {
         this.divElement = document.createElement('div');
         this.divElement.setAttribute('id', 'clock-stats');
         this.divElement.style.setProperty('position', 'absolute');
-        this.divElement.style.setProperty('top', '4px');
+        this.divElement.style.setProperty('bottom', '4px');
         this.divElement.style.setProperty('right', '4px');
     }
 

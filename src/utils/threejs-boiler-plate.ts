@@ -2,6 +2,7 @@ import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridH
 import { Clock } from './clock';
 import { Emitter } from './emitter';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { rng } from './rng';
 import './main.css';
 
 export interface TextureData {
@@ -18,6 +19,7 @@ export interface SetupBasicSceneParams {
     gridHelper?: boolean,
     orbitContols?: boolean,
     onFrame?: OnFrameFunction,
+    cameraDistance?: number,
 }
 
 export interface CommonEventProps {
@@ -62,6 +64,8 @@ export class ThreeJsBoilerPlate extends Emitter {
     public get canvas(): HTMLCanvasElement {
         return this.renderer.domElement;
     }
+
+    public rng = rng;
 
     constructor(params?: ThreeJsBoilerPlateParams) {
         super();
@@ -216,7 +220,7 @@ export class ThreeJsBoilerPlate extends Emitter {
     }
 
     public setupBasicScene(params: SetupBasicSceneParams = {}) {
-        this.camera.position.z = 5;
+        this.camera.position.z = params.cameraDistance ?? 5;
 
         if (params.ambientLight !== false) this.scene.add(new AmbientLight());
         if (params.directionalLight !== false) this.scene.add(new DirectionalLight());

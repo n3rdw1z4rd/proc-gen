@@ -235,4 +235,26 @@ export class SimplexNoise {
         // The result is scaled to stay just inside [-1,1]
         return 32.0 * (n0 + n1 + n2 + n3);
     }
+
+    fractalNoise3d(
+        xin: number,
+        yin: number,
+        zin: number,
+        octaves: number = 4,
+        frequency: number = 1.0,
+        persistence: number = 0.5,
+        amplitude: number = 0.5,
+    ): number {
+        let height = 0.0;
+
+        for (let octave = 0; octave < octaves; octave++) {
+            const freq = frequency * Math.pow(2, octave);
+
+            height += this.noise3d(xin * freq, yin * freq, zin * freq) * (amplitude * Math.pow(persistence, octave));
+        }
+
+        height = height / (2 - 1 / Math.pow(2, octaves - 1));
+
+        return height;
+    }
 }
