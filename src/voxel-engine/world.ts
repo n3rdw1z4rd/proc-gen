@@ -37,21 +37,22 @@ export class Chunk extends Mesh {
 
         this.material = params.material;
 
-        this._generateChunkTerrain();
+        // this._generateChunkTerrain();
+        this._voxels.fill(1);
 
         // this.geometry = new BoxGeometry();
 
-        // this._generateChunkGeometry();
+        this._generateChunkGeometry();
         // this.onBeforeRender = this._onBeforeRender.bind(this);
 
-        this.onBeforeRender = () => {
-            log('onBeforeRender');
+        // this.onBeforeRender = () => {
+        //     log('onBeforeRender');
 
-            if (this.needsGeometryUpdate) {
-                this._generateChunkGeometry();
-                this.needsGeometryUpdate = false;
-            }
-        };
+        //     if (this.needsGeometryUpdate) {
+        //         this._generateChunkGeometry();
+        //         this.needsGeometryUpdate = false;
+        //     }
+        // };
     }
 
     private _computeChunkIndex(position: VEC3) {

@@ -13,20 +13,12 @@ ThreeJsBoilerPlate.LoadTexture('/flourish-cc-by-nc-sa.png')
 
         const eng = new ThreeJsBoilerPlate();
         eng.appendTo(document.getElementById('ROOT')!);
-
-        eng.camera.position.z = 20;
-
-        eng.scene.add(new AmbientLight());
-        eng.scene.add(new DirectionalLight());
-        eng.scene.add(new GridHelper(100, 100));
-        // eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
+        eng.setupBasicScene({ cameraDistance: 20 });
 
         const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
         // const world = new World('/flourish-cc-by-nc-sa.png');
         // eng.scene.add(world);
-
-
 
         // let picked: Intersection | null = null;
 
@@ -60,7 +52,7 @@ ThreeJsBoilerPlate.LoadTexture('/flourish-cc-by-nc-sa.png')
         });
 
         const chunk = new Chunk({
-            size: 2,
+            size: 4,
             textureWidth,
             textureHeight,
             textureSize: 16,

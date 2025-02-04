@@ -2,19 +2,23 @@ import { TextureData, ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 // import { VoxelWorld } from './voxel-world';
 import { BoxGeometry, Mesh, MeshPhongMaterial, NearestFilter } from 'three';
 import { VoxelChunk } from './voxel-chunk';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
+const CHUNK_SIZE = 4;
+const PLAYER_SPEED = 1.0;
 
 ThreeJsBoilerPlate.LoadTexture('/flourish-cc-by-nc-sa.png')
     .then((textureData: TextureData) => {
-        const CHUNK_SIZE = 4;
-        const PLAYER_SPEED = 1.0;
+        textureData.texture.magFilter = NearestFilter;
 
         const eng = new ThreeJsBoilerPlate();
-
         eng.appendTo(document.getElementById('ROOT')!);
-        eng.camera.position.y = CHUNK_SIZE * 2;
+        eng.setupBasicScene({
+            cameraDistance: CHUNK_SIZE * 2,
+            // gridHelper: false,
+        });
 
-        textureData.texture.magFilter = NearestFilter;
+        const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
         // const world = new VoxelWorld({
         //     chunkSize: CHUNK_SIZE,
@@ -46,18 +50,21 @@ ThreeJsBoilerPlate.LoadTexture('/flourish-cc-by-nc-sa.png')
 
         eng.scene.add(player);
 
-        eng.setupBasicScene({
-            onFrame: (deltaTime: number) => {
-                if (eng.isKeyDown('KeyW')) player.position.z -= PLAYER_SPEED * deltaTime;
-                if (eng.isKeyDown('KeyS')) player.position.z += PLAYER_SPEED * deltaTime;
-                if (eng.isKeyDown('KeyA')) player.position.x -= PLAYER_SPEED * deltaTime;
-                if (eng.isKeyDown('KeyD')) player.position.x += PLAYER_SPEED * deltaTime;
+        eng.clock.run((deltaTime: number) => {
+            eng.resize();
+            controls.update(deltaTime);
 
-                chunk.update();
+            if (eng.isKeyDown('KeyW')) player.position.z -= PLAYER_SPEED * deltaTime;
+            if (eng.isKeyDown('KeyS')) player.position.z += PLAYER_SPEED * deltaTime;
+            if (eng.isKeyDown('KeyA')) player.position.x -= PLAYER_SPEED * deltaTime;
+            if (eng.isKeyDown('KeyD')) player.position.x += PLAYER_SPEED * deltaTime;
 
-                eng.clock.showStats({
-                    player: player.position.toArray(),
-                });
-            },
+            chunk.update();
+
+            eng.renderer.render(eng.scene, eng.camera);
+
+            eng.clock.showStats({
+                player: player.position.toArray(),
+            });
         });
     });

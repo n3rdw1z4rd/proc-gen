@@ -11,14 +11,17 @@ export interface TextureData {
     texture: Texture,
 }
 
+export interface TextureAtlas {
+    size: number,
+    textureData: TextureData,
+}
+
 export type OnFrameFunction = (deltaTime: number) => void;
 
 export interface SetupBasicSceneParams {
     ambientLight?: boolean,
     directionalLight?: boolean,
     gridHelper?: boolean,
-    orbitContols?: boolean,
-    onFrame?: OnFrameFunction,
     cameraDistance?: number,
 }
 
@@ -225,21 +228,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         if (params.ambientLight !== false) this.scene.add(new AmbientLight());
         if (params.directionalLight !== false) this.scene.add(new DirectionalLight());
         if (params.gridHelper !== false) this.scene.add(new GridHelper(100, 100, 0xff0000));
-
-        const controls: OrbitControls | null = (params.orbitContols !== false)
-            ? new OrbitControls(this.camera, this.renderer.domElement)
-            : null;
-
-        this.clock.run((deltaTime: number) => {
-            this.resize();
-            controls?.update(deltaTime);
-
-            if (params.onFrame) {
-                params.onFrame(deltaTime);
-            }
-
-            this.renderer.render(this.scene, this.camera);
-        });
     }
 
     public pick(): Intersection | null {
@@ -289,10 +277,14 @@ export class ThreeJsBoilerPlate extends Emitter {
     }
 
     public static CreateCubeMesh(size: number = 1, color: ColorRepresentation = 0xff0000): Mesh {
-        return new Mesh(
+        const cubeMesh = new Mesh(
             new BoxGeometry(size, size, size),
             new MeshLambertMaterial({ color }),
         );
+
+        cubeMesh.name = 'CubeMesh';
+
+        return cubeMesh;
     }
 
     public static CreatePlaneMesh(size: number = 10, segments: number = 10, color: ColorRepresentation = 0xff0000): Mesh {
