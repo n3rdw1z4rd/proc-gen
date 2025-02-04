@@ -12,7 +12,7 @@ export interface TextureData {
 }
 
 export interface TextureAtlas {
-    size: number,
+    textureSize: number,
     textureData: TextureData,
 }
 
