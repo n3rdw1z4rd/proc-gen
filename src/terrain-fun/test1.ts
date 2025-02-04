@@ -3,6 +3,7 @@ import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
 import { World, WorldParams } from './world';
 import { ThreeJsPlayerController } from '../utils/threejs-player-controller';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 rng.seed = 42;
 
@@ -50,23 +51,28 @@ eng.on('mouse_button_clicked', (ev: KeyValue) => {
     }
 });
 
-eng.setupBasicScene({
-    gridHelper: false,
-    orbitContols: false,
-    onFrame: (deltaTime: number) => {
-        player.velocity.x = (eng.getKeyState('KeyD') - eng.getKeyState('KeyA'))
-        player.velocity.z = (eng.getKeyState('KeyS') - eng.getKeyState('KeyW'));
-        player.update(deltaTime);
+eng.setupBasicScene({ gridHelper: false });
 
-        world.update(deltaTime, player.position);
+const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
-        eng.clock.showStats({
-            chunkSize: world.chunkSize,
-            chunkResolution: world.chunkResolution,
-            viewDistance: world.viewDistance,
-            stepAmount: world.generateStepAmount,
-            player: `${player.position.x.toFixed(2)}, ${player.position.z.toFixed(2)}`,
-            picked: picked?.name ?? null,
-        });
-    }
+eng.clock.run((deltaTime: number) => {
+    eng.resize();
+    controls.update(deltaTime);
+
+    player.velocity.x = (eng.getKeyState('KeyD') - eng.getKeyState('KeyA'))
+    player.velocity.z = (eng.getKeyState('KeyS') - eng.getKeyState('KeyW'));
+    player.update(deltaTime);
+
+    world.update(deltaTime, player.position);
+
+    eng.renderer.render(eng.scene, eng.camera);
+
+    eng.clock.showStats({
+        chunkSize: world.chunkSize,
+        chunkResolution: world.chunkResolution,
+        viewDistance: world.viewDistance,
+        stepAmount: world.generateStepAmount,
+        player: `${player.position.x.toFixed(2)}, ${player.position.z.toFixed(2)}`,
+        picked: picked?.name ?? null,
+    });
 });
