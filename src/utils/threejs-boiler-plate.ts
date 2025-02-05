@@ -1,9 +1,10 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { rng } from './rng';
 import './main.css';
+import { log } from './logger';
+import { clamp } from './math';
 
 export interface TextureData {
     width: number,
@@ -11,9 +12,46 @@ export interface TextureData {
     texture: Texture,
 }
 
-export interface TextureAtlas {
-    textureSize: number,
-    textureData: TextureData,
+// export interface TextureAtlas {
+//     textureSize: number,
+//     textureData: TextureData,
+// }
+
+export class TextureAtlas {
+    tileWidth: number;
+    tileHeight: number;
+    textureWidth: number;
+    textureHeight: number;
+
+    texture: Texture;
+
+    uvxSize: number;
+    uvySize: number;
+
+    private _maxVoxelNumber: number;
+
+    constructor(textureData: TextureData, tileWidth: number = 16, tileHeight: number = tileWidth) {
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
+
+        this.textureWidth = textureData.width;
+        this.textureHeight = textureData.height;
+        this.texture = textureData.texture;
+
+        this.uvxSize = this.tileWidth / this.textureWidth;
+        this.uvySize = this.tileHeight / this.textureHeight;
+
+        this._maxVoxelNumber = (this.textureWidth / this.tileWidth) * (this.textureHeight / this.tileHeight);
+    }
+
+    get(voxel: number, ux: number, uy: number): [number, number] {
+        voxel = clamp(voxel, 0, this._maxVoxelNumber);
+
+        const uvx = (voxel - 1 + ux) * this.uvxSize;
+        const uvy = 1 - (1 - uy) * this.uvySize;
+
+        return [uvx, uvy];
+    }
 }
 
 export type OnFrameFunction = (deltaTime: number) => void;

@@ -119,7 +119,7 @@ export class Chunk extends Mesh {
                     if (voxel) {
                         const uvVoxel = voxel - 1;
 
-                        for (const { dir, corners, uvRow } of FACES) {
+                        for (const { dir, test: corners, uvRow } of FACES) {
                             const neighborPos: VEC3 = [voxelPos[0] + dir[0], voxelPos[1] + dir[1], voxelPos[2] + dir[2]];
                             const neighborVoxel = this._getVoxelInChunk(neighborPos);
 

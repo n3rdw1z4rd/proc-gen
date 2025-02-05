@@ -64,7 +64,7 @@ ThreeJsBoilerPlate.LoadTexture('/flourish-cc-by-nc-sa.png')
             eng.renderer.render(eng.scene, eng.camera);
 
             eng.clock.showStats({
-                player: player.position.toArray(),
+                player: player.position.toArray().map((v: number) => v.toFixed(2)).join(', '),
             });
         });
     });
