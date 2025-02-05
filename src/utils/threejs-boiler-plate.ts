@@ -2,20 +2,14 @@ import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridH
 import { Clock } from './clock';
 import { Emitter } from './emitter';
 import { rng } from './rng';
-import './main.css';
-import { log } from './logger';
 import { clamp } from './math';
+import './main.css';
 
 export interface TextureData {
     width: number,
     height: number,
     texture: Texture,
 }
-
-// export interface TextureAtlas {
-//     textureSize: number,
-//     textureData: TextureData,
-// }
 
 export class TextureAtlas {
     tileWidth: number;

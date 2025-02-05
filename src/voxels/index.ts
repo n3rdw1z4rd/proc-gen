@@ -9,7 +9,6 @@ rng.seed = 42;
 ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: TextureData) => {
     textureData.texture.magFilter = NearestFilter;
 
-    // const textureAtlas: TextureAtlas = { textureSize: 16, textureData };
     const textureAtlas: TextureAtlas = new TextureAtlas(textureData, 16);
 
     const eng = new ThreeJsBoilerPlate();
@@ -21,7 +20,7 @@ ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: Textur
 
     const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
-    const CHUNK_SIZE = 1;
+    const CHUNK_SIZE = 2;
     const CHUNK_FILL = 1;
 
     eng.scene.add(new Mesh(
