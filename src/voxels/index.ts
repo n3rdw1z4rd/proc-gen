@@ -14,14 +14,20 @@ ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: Textur
     const eng = new ThreeJsBoilerPlate();
     eng.appendTo(document.getElementById('ROOT')!);
     eng.setupBasicScene({
-        cameraDistance: 5,
+        cameraDistance: 20,
         gridHelper: false,
     });
 
     const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
-    const CHUNK_SIZE = 2;
-    const chunkGeometry = new ChunkGeometry(CHUNK_SIZE, textureAtlas);
+    const chunkGeometry = new ChunkGeometry(textureAtlas);
+
+    // chunkGeometry.forEachVoxel((position: VEC3) => {
+    //     if (rng.nextf > 0.5) {
+    //         chunkGeometry.set(position, 1);//rng.range(0, chunkGeometry.textureAtlas.maxVoxelNumber));
+    //     }
+    // });
+    // chunkGeometry.updateGeometry();
 
     eng.scene.add(new Mesh(
         chunkGeometry,

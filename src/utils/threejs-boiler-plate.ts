@@ -22,7 +22,7 @@ export class TextureAtlas {
     uvxSize: number;
     uvySize: number;
 
-    private _maxVoxelNumber: number;
+    maxVoxelNumber: number;
 
     constructor(textureData: TextureData, tileWidth: number = 16, tileHeight: number = tileWidth) {
         this.tileWidth = tileWidth;
@@ -35,13 +35,13 @@ export class TextureAtlas {
         this.uvxSize = this.tileWidth / this.textureWidth;
         this.uvySize = this.tileHeight / this.textureHeight;
 
-        this._maxVoxelNumber = (this.textureWidth / this.tileWidth) * (this.textureHeight / this.tileHeight);
+        this.maxVoxelNumber = (this.textureWidth / this.tileWidth) * (this.textureHeight / this.tileHeight);
     }
 
     get(voxel: number, ux: number, uy: number): [number, number] {
-        voxel = clamp(voxel, 0, this._maxVoxelNumber);
+        voxel = clamp(voxel, 0, this.maxVoxelNumber);
 
-        const uvx = (voxel - 1 + ux) * this.uvxSize;
+        const uvx = (voxel + ux) * this.uvxSize;
         const uvy = 1 - (1 - uy) * this.uvySize;
 
         return [uvx, uvy];
