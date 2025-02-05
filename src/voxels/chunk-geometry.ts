@@ -8,12 +8,13 @@ export class ChunkGeometry extends BufferGeometry {
     constructor(
         public textureAtlas: TextureAtlas,
         public readonly size: number = 16,
+        public readonly height: number = size,
     ) {
         super();
 
-        this._voxels = new Uint8Array(size * size * size);
+        this._voxels = new Uint8Array(size * size * height);
         this._voxels.fill(0);
-        this._generateGeometry();
+        this.updateGeometry();
     }
 
     private _calculateVoxelIndex(position: VEC3): number {
@@ -23,10 +24,10 @@ export class ChunkGeometry extends BufferGeometry {
 
         if (
             x >= 0 && x < this.size &&
-            y >= 0 && y < this.size &&
+            y >= 0 && y < this.height &&
             z >= 0 && z < this.size
         ) {
-            index = y * this.size * this.size + z * this.size + x;
+            index = ((x * this.height) + y) * this.size + z;
         }
 
         return index;
@@ -42,15 +43,19 @@ export class ChunkGeometry extends BufferGeometry {
         return voxel;
     }
 
-    public set(position: VEC3, value: number) {
+    public set(position: VEC3, value: number, updateGeometry: boolean = true) {
         const i = this._calculateVoxelIndex(position);
 
         if (i >= 0 && i < this._voxels.length) {
             this._voxels[i] = value;
+
+            if (updateGeometry === true) this.updateGeometry();
         }
     }
 
-    private _generateGeometry() {
+    public updateGeometry(): number {
+        const start = Date.now();
+
         const positions: number[] = [];
         const normals: number[] = [];
         const uvs: number[] = [];
@@ -58,9 +63,9 @@ export class ChunkGeometry extends BufferGeometry {
 
         let needsUpdate: boolean = false;
 
-        for (let y = 0; y < this.size; ++y) {
-            for (let z = 0; z < this.size; ++z) {
-                for (let x = 0; x < this.size; ++x) {
+        for (let x = 0; x < this.size; ++x) {
+            for (let y = 0; y < this.height; ++y) {
+                for (let z = 0; z < this.size; ++z) {
                     const voxel = this.get([x, y, z]);
 
                     if (voxel) {
@@ -103,19 +108,8 @@ export class ChunkGeometry extends BufferGeometry {
             this.attributes.position.needsUpdate = true;
             this.computeVertexNormals();
         }
-    }
 
-    public updateGeometry() {
-        this._generateGeometry();
-    }
-
-    public forEachVoxel(callback: (this: ChunkGeometry, position: VEC3) => void) {
-        for (let y = 0; y < this.size; ++y) {
-            for (let z = 0; z < this.size; ++z) {
-                for (let x = 0; x < this.size; ++x) {
-                    callback.bind(this)([x, y, z]);
-                }
-            }
-        }
+        const time = (Date.now() - start);
+        return time;
     }
 }

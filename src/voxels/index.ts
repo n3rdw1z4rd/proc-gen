@@ -3,6 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { rng } from '../utils/rng';
 import { Mesh, MeshPhongMaterial, NearestFilter } from 'three';
 import { ChunkGeometry } from './chunk-geometry';
+import { SimplexNoise } from '../utils/simplex-noise';
+import { log } from '../utils/logger';
 
 rng.seed = 42;
 
@@ -14,7 +16,7 @@ ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: Textur
     const eng = new ThreeJsBoilerPlate();
     eng.appendTo(document.getElementById('ROOT')!);
     eng.setupBasicScene({
-        cameraDistance: 20,
+        cameraDistance: 25,
         gridHelper: false,
     });
 
@@ -22,12 +24,26 @@ ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: Textur
 
     const chunkGeometry = new ChunkGeometry(textureAtlas);
 
-    // chunkGeometry.forEachVoxel((position: VEC3) => {
-    //     if (rng.nextf > 0.5) {
-    //         chunkGeometry.set(position, 1);//rng.range(0, chunkGeometry.textureAtlas.maxVoxelNumber));
-    //     }
-    // });
-    // chunkGeometry.updateGeometry();
+    const noise = new SimplexNoise();
+
+    for (let x = 0; x < chunkGeometry.size; ++x) {
+        for (let y = 0; y < chunkGeometry.height; ++y) {
+            for (let z = 0; z < chunkGeometry.size; ++z) {
+                const h = noise.fractalNoise2d(
+                    x / chunkGeometry.size,
+                    z / chunkGeometry.size,
+                    4, // octaves
+                    0.1, // frequency
+                    0.4, // persistence
+                    2, // amplitude
+                );
+
+                if (y < h * chunkGeometry.height) chunkGeometry.set([x, y, z], 1, false);
+            }
+        }
+    }
+
+    log(`updateGeometry time: ${chunkGeometry.updateGeometry()}ms`);
 
     eng.scene.add(new Mesh(
         chunkGeometry,
