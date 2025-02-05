@@ -1,11 +1,7 @@
 import { BufferAttribute, BufferGeometry } from 'three';
 import { TextureAtlas } from '../utils/threejs-boiler-plate';
+import { FACES } from './faces';
 import { log } from '../utils/logger';
-import { FACES } from './face-map';
-
-export interface ChunkGeometryParams {
-    fill?: number,
-}
 
 export class ChunkGeometry extends BufferGeometry {
     private _voxels: Uint8Array;
@@ -13,19 +9,19 @@ export class ChunkGeometry extends BufferGeometry {
     constructor(
         public readonly size: number,
         public textureAtlas: TextureAtlas,
-        params?: ChunkGeometryParams,
     ) {
         super();
 
         this._voxels = new Uint8Array(size * size * size);
-        this._voxels.fill(params?.fill ?? 0);
+        this._voxels.fill(0);
 
         this._generateGeometry();
     }
 
-    private _calculateVoxelIndex(position: [number, number, number]): number {
+    private _calculateVoxelIndex(position: VEC3): number {
         const [x, y, z] = position;
-        return y * (this.size * this.size) + z * this.size + x;
+
+        return y * this.size * this.size + z * this.size + x;
     }
 
     public get(position: [number, number, number]): number {
@@ -34,10 +30,8 @@ export class ChunkGeometry extends BufferGeometry {
         return (i >= 0 && i < this._voxels.length) ? this._voxels[i] : 0;
     }
 
-    public set(position: [number, number, number], value: number) {
+    public set(position: VEC3, value: number) {
         const i = this._calculateVoxelIndex(position);
-
-        log('set:', position, value, i);
 
         if (i >= 0 && i < this._voxels.length) {
             this._voxels[i] = value;

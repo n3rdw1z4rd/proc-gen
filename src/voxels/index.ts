@@ -21,10 +21,10 @@ ThreeJsBoilerPlate.LoadTexture('/minecraft-atles.png').then((textureData: Textur
     const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
     const CHUNK_SIZE = 2;
-    const CHUNK_FILL = 1;
+    const chunkGeometry = new ChunkGeometry(CHUNK_SIZE, textureAtlas);
 
     eng.scene.add(new Mesh(
-        new ChunkGeometry(CHUNK_SIZE, textureAtlas, { fill: CHUNK_FILL }),
+        chunkGeometry,
         new MeshPhongMaterial({
             map: textureData.texture,
             alphaTest: 0.1,
