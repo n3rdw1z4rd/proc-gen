@@ -3,7 +3,7 @@ import { TextureAtlas } from '../utils/threejs-boiler-plate';
 import { FACES } from './faces';
 
 export class ChunkGeometry extends BufferGeometry {
-    private _voxels: Uint8Array;
+    private _voxels: Map<string, number>;
 
     constructor(
         public textureAtlas: TextureAtlas,
@@ -12,50 +12,41 @@ export class ChunkGeometry extends BufferGeometry {
     ) {
         super();
 
-        this._voxels = new Uint8Array(size * size * height);
-        this._voxels.fill(0);
-        this.updateGeometry();
+        this._voxels = new Map<string, number>();
     }
 
-    private _calculateVoxelIndex(position: VEC3): number {
+    private _xyz2i(position: VEC3): string {
         const [x, y, z] = position;
-
-        let index = -1;
-
-        if (
-            x >= 0 && x < this.size &&
-            y >= 0 && y < this.height &&
-            z >= 0 && z < this.size
-        ) {
-            index = ((x * this.height) + y) * this.size + z;
-        }
-
-        return index;
+        return `${x},${y},${z}`;
     }
 
     public get(position: VEC3): number {
-        let voxel = 0;
-
-        const index = this._calculateVoxelIndex(position);
-
-        if (index >= 0) voxel = this._voxels[index];
-
-        return voxel;
+        const voxel = this._voxels.get(this._xyz2i(position));
+        return voxel ?? 0;
     }
 
     public set(position: VEC3, value: number, updateGeometry: boolean = true) {
-        const i = this._calculateVoxelIndex(position);
-
-        if (i >= 0 && i < this._voxels.length) {
-            this._voxels[i] = value;
-
-            if (updateGeometry === true) this.updateGeometry();
-        }
+        this._voxels.set(this._xyz2i(position), value);
+        if (updateGeometry === true) this.updateGeometry();
     }
 
-    public updateGeometry(): number {
-        const start = Date.now();
+    public forEachVoxel(callback: (position: VEC3) => number, updateGeometry: boolean = true) {
+        for (let x = 0; x < this.size; ++x) {
+            for (let y = 0; y < this.height; ++y) {
+                for (let z = 0; z < this.size; ++z) {
+                    const value = callback.bind(this)([x, y, z]);
 
+                    if (value >= 0 && value < this.textureAtlas.maxVoxelNumber) {
+                        this._voxels.set(this._xyz2i([x, y, z]), value);
+                    }
+                }
+            }
+        }
+
+        if (updateGeometry === true) this.updateGeometry();
+    }
+
+    public updateGeometry() {
         const positions: number[] = [];
         const normals: number[] = [];
         const uvs: number[] = [];
@@ -108,8 +99,5 @@ export class ChunkGeometry extends BufferGeometry {
             this.attributes.position.needsUpdate = true;
             this.computeVertexNormals();
         }
-
-        const time = (Date.now() - start);
-        return time;
     }
 }
