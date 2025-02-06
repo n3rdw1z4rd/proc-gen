@@ -1,8 +1,8 @@
-import { TextureAtlas, TextureData, ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
 import { NearestFilter } from 'three';
 import { World } from './world';
+import { TextureAtlas, TextureData } from '../utils/texture-atlas';
 
 rng.seed = 42;
 
@@ -21,14 +21,11 @@ ThreeJsBoilerPlate
             gridHelper: false,
         });
 
-        const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
-
         const world = new World(textureAtlas, 3);
         eng.scene.add(world);
 
         eng.clock.run((dt: number) => {
             eng.resize();
-            controls.update(dt);
             world.update([0, 0, 0]);
             eng.renderer.render(eng.scene, eng.camera);
             eng.clock.showStats();

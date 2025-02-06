@@ -35,12 +35,12 @@ player.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
 eng.on('mouse_move', (ev: KeyValue) => {
     if (eng.isMouseButtonDown(0)) {
-        player.cameraRig.onMouseMove(ev.deltaX, ev.deltaY);
+        player.cameraRig.orbit(ev.deltaX, ev.deltaY);
     }
 });
 
 eng.on('mouse_wheel', (ev: KeyValue) => {
-    player.cameraRig.onMouseWheel(ev.deltaX, ev.deltaY);
+    player.cameraRig.dolly(ev.deltaY);
 });
 
 let picked: Object3D | null = null;
