@@ -87,6 +87,11 @@ export class Rng {
 
         return rows;
     }
+
+    public randomUnitVector(): VEC2 {
+        const theta = rng.nextf * 2 * Math.PI;
+        return [Math.cos(theta), Math.sin(theta)];
+    }
 }
 
 export const rng: Rng = new Rng();
