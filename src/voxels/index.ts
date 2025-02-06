@@ -1,9 +1,8 @@
 import { TextureAtlas, TextureData, ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { rng } from '../utils/rng';
-import { Mesh, MeshPhongMaterial, NearestFilter } from 'three';
-import { ChunkGeometry } from './chunk-geometry';
-import { SimplexNoise } from '../utils/simplex-noise';
+import { NearestFilter } from 'three';
+import { VoxelWorld } from './voxel-world';
 
 rng.seed = 42;
 
@@ -23,24 +22,14 @@ ThreeJsBoilerPlate
         });
 
         const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
-        const noise = new SimplexNoise();
 
-        const chunkGeometry = new ChunkGeometry(textureAtlas);
-
-        chunkGeometry.forEachVoxel((): number => rng.nextf > 0.5 ? rng.range(1, 16) : 0);
-
-        eng.scene.add(new Mesh(
-            chunkGeometry,
-            new MeshPhongMaterial({
-                map: textureData.texture,
-                alphaTest: 0.1,
-                transparent: true,
-            }),
-        ));
+        const world = new VoxelWorld(textureAtlas, 3);
+        eng.scene.add(world);
 
         eng.clock.run((dt: number) => {
             eng.resize();
             controls.update(dt);
+            world.update([0, 0, 0]);
             eng.renderer.render(eng.scene, eng.camera);
             eng.clock.showStats();
         });

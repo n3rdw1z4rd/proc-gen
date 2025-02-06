@@ -1,5 +1,6 @@
 import { BufferAttribute, BufferGeometry } from 'three';
 import { TextureAtlas } from '../utils/threejs-boiler-plate';
+import { xyz2i } from './utils';
 
 export class ChunkGeometry extends BufferGeometry {
     private _voxels: Map<string, number>;
@@ -14,18 +15,13 @@ export class ChunkGeometry extends BufferGeometry {
         this._voxels = new Map<string, number>();
     }
 
-    private _xyz2i(position: VEC3): string {
-        const [x, y, z] = position;
-        return `${x},${y},${z}`;
-    }
-
     public get(position: VEC3): number {
-        const voxel = this._voxels.get(this._xyz2i(position));
+        const voxel = this._voxels.get(xyz2i(position));
         return voxel ?? 0;
     }
 
     public set(position: VEC3, value: number, updateGeometry: boolean = true) {
-        this._voxels.set(this._xyz2i(position), value);
+        this._voxels.set(xyz2i(position), value);
         if (updateGeometry === true) this.updateGeometry();
     }
 
@@ -36,7 +32,7 @@ export class ChunkGeometry extends BufferGeometry {
                     const value = callback.bind(this)([x, y, z]);
 
                     if (value >= 0 && value < this.textureAtlas.maxVoxelNumber) {
-                        this._voxels.set(this._xyz2i([x, y, z]), value);
+                        this._voxels.set(xyz2i([x, y, z]), value);
                     }
                 }
             }
