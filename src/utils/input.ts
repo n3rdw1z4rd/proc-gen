@@ -1,5 +1,7 @@
 import { Emitter } from './emitter';
 
+const emitter = Emitter.instance;
+
 export interface InputState {
     state: number,
     timeStamp: number,
@@ -13,7 +15,7 @@ export interface CommonEventProps {
     shiftKey: boolean,
 }
 
-export class Input extends Emitter {
+export class Input {
     public inputThreshold: number = 200;
     private _keyStates: { [key: string]: InputState } = {};
     private _mouseButtonStates: { [key: number]: InputState } = {};
@@ -21,23 +23,17 @@ export class Input extends Emitter {
     private _mousePosition: VEC2 = [0, 0];
     public get mousePosition(): VEC2 { return this._mousePosition; }
 
-    private static _globalInstance: Input;
+    private static _instance: Input;
 
-    public static get GlobalInstance(): Input {
-        if (!Input._globalInstance) {
-            Input._globalInstance = new Input();
+    public static get instance(): Input {
+        if (!Input._instance) {
+            Input._instance = new Input();
         }
 
-        return Input._globalInstance;
+        return Input._instance;
     }
 
-    public static set GlobalInstance(instance: Input) {
-        Input._globalInstance = instance;
-    }
-
-    constructor() {
-        super();
-
+    private constructor() {
         window.addEventListener('contextmenu', this._onContextMenu.bind(this));
         window.addEventListener('keydown', this._onKeyDown.bind(this));
         window.addEventListener('keyup', this._onKeyUp.bind(this));
@@ -63,7 +59,7 @@ export class Input extends Emitter {
 
     private _onContextMenu(ev: MouseEvent) {
         ev.preventDefault();
-        this.emit('contextmenu');
+        emitter.emit('contextmenu');
         return false;
     }
 
@@ -74,7 +70,7 @@ export class Input extends Emitter {
 
         if (!ev.repeat) {
             this._keyStates[code] = { state: 1, timeStamp: props.timeStamp };
-            this.emit('key_down', { ...props, code, key });
+            emitter.emit('key_down', { ...props, code, key });
         }
     }
 
@@ -85,10 +81,10 @@ export class Input extends Emitter {
         const deltaStamp = props.timeStamp - (this._keyStates[code]?.timeStamp ?? 0);
 
         this._keyStates[code] = { state: 0, timeStamp: props.timeStamp };
-        this.emit('key_up', { ...props, code, key });
+        emitter.emit('key_up', { ...props, code, key });
 
         if (deltaStamp < this.inputThreshold) {
-            this.emit('key_pressed', { ...props, code, key });
+            emitter.emit('key_pressed', { ...props, code, key });
         }
     }
 
@@ -99,7 +95,7 @@ export class Input extends Emitter {
 
         if (!this._mouseButtonStates[button]?.state) {
             this._mouseButtonStates[button] = { state: 1, timeStamp: props.timeStamp };
-            this.emit('mouse_button_down', { ...props, button });
+            emitter.emit('mouse_button_down', { ...props, button });
         }
     }
 
@@ -110,10 +106,10 @@ export class Input extends Emitter {
         const deltaStamp = props.timeStamp - (this._mouseButtonStates[button]?.timeStamp ?? 0);
 
         this._mouseButtonStates[button] = { state: 0, timeStamp: props.timeStamp };
-        this.emit('mouse_button_up', { ...props, button });
+        emitter.emit('mouse_button_up', { ...props, button });
 
         if (deltaStamp < this.inputThreshold) {
-            this.emit('mouse_button_clicked', { ...props, button });
+            emitter.emit('mouse_button_clicked', { ...props, button });
         }
     }
 
@@ -124,21 +120,21 @@ export class Input extends Emitter {
 
         this._mousePosition = [offsetX, offsetY];
 
-        this.emit('mouse_move', {
+        emitter.emit('mouse_move', {
             ...props,
             buttons,
             x: offsetX,
             y: offsetY,
             deltaX: movementX,
             deltaY: movementY,
-        })
+        });
     }
 
     private _onWheel(ev: WheelEvent) {
         const props = this._getCommonEventProps(ev);
         const { deltaX, deltaY, deltaZ } = ev;
 
-        this.emit('mouse_wheel', {
+        emitter.emit('mouse_wheel', {
             ...props,
             deltaX, deltaY, deltaZ,
         });

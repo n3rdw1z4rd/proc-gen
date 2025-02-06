@@ -3,6 +3,9 @@ import { rng } from '../utils/rng';
 import { NearestFilter } from 'three';
 import { World } from './world';
 import { TextureAtlas, TextureData } from '../utils/texture-atlas';
+import { log } from '../utils/logger';
+
+log('voxels');
 
 rng.seed = 42;
 

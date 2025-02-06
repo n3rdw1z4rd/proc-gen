@@ -1,12 +1,14 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
+import { Emitter } from './emitter';
 import { Input } from './input';
 import { rng } from './rng';
 import { TextureData } from './texture-atlas';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
 import './main.css';
 
-export type OnFrameFunction = (deltaTime: number) => void;
+const emitter = Emitter.instance;
+const input = Input.instance;
 
 export interface SetupBasicSceneParams {
     ambientLight?: boolean,
@@ -26,7 +28,7 @@ export interface ThreeJsBoilerPlateParams {
     }
 }
 
-export class ThreeJsBoilerPlate extends Input {
+export class ThreeJsBoilerPlate {
     public clock: Clock;
     public renderer: WebGLRenderer;
     public scene: Scene;
@@ -40,10 +42,6 @@ export class ThreeJsBoilerPlate extends Input {
     public rng = rng;
 
     constructor(params?: ThreeJsBoilerPlateParams) {
-        super();
-
-        Input.GlobalInstance = this; // TODO: is there a better way to ensure "this" is the GlobalInstance?
-
         this.clock = new Clock();
 
         this.renderer = new WebGLRenderer(params?.renderer);
@@ -51,12 +49,15 @@ export class ThreeJsBoilerPlate extends Input {
         this.scene = new Scene();
 
         this.cameraRig = new ThreeJsCameraRig(params?.camera);
+        this.scene.add(this.cameraRig);
 
-        this.on('mouse_move', ({ deltaX, deltaY }: KeyValue) =>
-            (this.isMouseButtonDown(0) && this.cameraRig.orbit(deltaX, deltaY))
-        );
-
-        this.on('mouse_wheel', ({ deltaY }: KeyValue) => this.cameraRig.dolly(deltaY));
+        emitter
+            .on('mouse_move', ({ deltaX, deltaY }: KeyValue) => {
+                if (input.isMouseButtonDown(0)) {
+                    this.cameraRig.orbit(deltaX, deltaY);
+                }
+            })
+            .on('mouse_wheel', ({ deltaY }: KeyValue) => this.cameraRig.dolly(deltaY));
 
         if (params?.parentElement) {
             this.appendTo(params.parentElement);
@@ -98,7 +99,7 @@ export class ThreeJsBoilerPlate extends Input {
     }
 
     public setupBasicScene(params: SetupBasicSceneParams = {}) {
-        this.cameraRig.position.z = params.cameraDistance ?? 5;
+        this.camera.position.z = params.cameraDistance ?? 5;
 
         if (params.ambientLight !== false) this.scene.add(new AmbientLight());
         if (params.directionalLight !== false) this.scene.add(new DirectionalLight());
@@ -110,8 +111,8 @@ export class ThreeJsBoilerPlate extends Input {
             this.raycaster = new Raycaster();
         }
 
-        const pickX = (this.mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
-        const pickY = -(this.mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
+        const pickX = (input.mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
+        const pickY = -(input.mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
 
         this.raycaster.setFromCamera(new Vector2(pickX, pickY), this.cameraRig.camera);
 
