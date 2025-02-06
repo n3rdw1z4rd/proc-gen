@@ -1,6 +1,6 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { Input } from './input';
 import { Clock } from './clock';
-import { Emitter } from './emitter';
 import { rng } from './rng';
 import { clamp } from './math';
 import './main.css';
@@ -57,19 +57,6 @@ export interface SetupBasicSceneParams {
     cameraDistance?: number,
 }
 
-export interface CommonEventProps {
-    timeStamp: number,
-    altKey: boolean,
-    ctrlKey: boolean,
-    metaKey: boolean,
-    shiftKey: boolean,
-}
-
-export interface InputState {
-    state: number,
-    timeStamp: number,
-}
-
 export interface ThreeJsBoilerPlateParams {
     parentElement?: HTMLElement,
     renderer?: WebGLRendererParameters,
@@ -81,18 +68,11 @@ export interface ThreeJsBoilerPlateParams {
     }
 }
 
-export class ThreeJsBoilerPlate extends Emitter {
+export class ThreeJsBoilerPlate extends Input {
     public clock: Clock;
     public renderer: WebGLRenderer;
     public camera: PerspectiveCamera;
     public scene: Scene;
-
-    public inputThreshold: number = 200;
-    private _keyStates: { [key: string]: InputState } = {};
-    private _mouseButtonStates: { [key: number]: InputState } = {};
-
-    private _mousePosition: VEC2 = [0, 0];
-    public get mousePosition(): VEC2 { return this._mousePosition; }
 
     public raycaster: Raycaster | undefined;
 
@@ -104,6 +84,8 @@ export class ThreeJsBoilerPlate extends Emitter {
 
     constructor(params?: ThreeJsBoilerPlateParams) {
         super();
+
+        Input.GlobalInstance = this; // TODO: is there a better way to ensure "this" is the GlobalInstance?
 
         this.clock = new Clock();
 
@@ -121,104 +103,6 @@ export class ThreeJsBoilerPlate extends Emitter {
         if (params?.parentElement) {
             this.appendTo(params.parentElement);
         }
-
-        window.addEventListener('keydown', this._onKeyDown.bind(this));
-        window.addEventListener('keyup', this._onKeyUp.bind(this));
-        window.addEventListener('mousedown', this._onMouseButtonDown.bind(this));
-        window.addEventListener('mouseup', this._onMouseButtonUp.bind(this));
-        window.addEventListener('mousemove', this._onMouseMove.bind(this));
-        window.addEventListener('wheel', this._onWheel.bind(this));
-        // TODO: add gamepad states
-        // TODO: add touch states
-    }
-
-    private _getCommonEventProps(ev: KeyboardEvent | MouseEvent | WheelEvent): CommonEventProps {
-        const props: CommonEventProps = {
-            timeStamp: ev.timeStamp,
-            altKey: ev.altKey,
-            ctrlKey: ev.ctrlKey,
-            metaKey: ev.metaKey,
-            shiftKey: ev.shiftKey,
-        };
-
-        return props;
-    }
-
-    private _onKeyDown(ev: KeyboardEvent) {
-        const props = this._getCommonEventProps(ev);
-
-        const { code, key } = ev;
-
-        if (!ev.repeat) {
-            this._keyStates[code] = { state: 1, timeStamp: props.timeStamp };
-            this.emit('key_down', { ...props, code, key });
-        }
-    }
-
-    private _onKeyUp(ev: KeyboardEvent) {
-        const props = this._getCommonEventProps(ev);
-
-        const { code, key } = ev;
-        const deltaStamp = props.timeStamp - (this._keyStates[code]?.timeStamp ?? 0);
-
-        this._keyStates[code] = { state: 0, timeStamp: props.timeStamp };
-        this.emit('key_up', { ...props, code, key });
-
-        if (deltaStamp < this.inputThreshold) {
-            this.emit('key_pressed', { ...props, code, key });
-        }
-    }
-
-    private _onMouseButtonDown(ev: MouseEvent) {
-        const props = this._getCommonEventProps(ev);
-
-        const { button } = ev;
-
-        if (!this._mouseButtonStates[button]?.state) {
-            this._mouseButtonStates[button] = { state: 1, timeStamp: props.timeStamp };
-            this.emit('mouse_button_down', { ...props, button });
-        }
-    }
-
-    private _onMouseButtonUp(ev: MouseEvent) {
-        const props = this._getCommonEventProps(ev);
-
-        const { button } = ev;
-        const deltaStamp = props.timeStamp - (this._mouseButtonStates[button]?.timeStamp ?? 0);
-
-        this._mouseButtonStates[button] = { state: 0, timeStamp: props.timeStamp };
-        this.emit('mouse_button_up', { ...props, button });
-
-        if (deltaStamp < this.inputThreshold) {
-            this.emit('mouse_button_clicked', { ...props, button });
-        }
-    }
-
-    private _onMouseMove(ev: MouseEvent) {
-        const props = this._getCommonEventProps(ev);
-
-        const { buttons, offsetX, offsetY, movementX, movementY } = ev;
-
-        this._mousePosition = [offsetX, offsetY];
-
-        this.emit('mouse_move', {
-            ...props,
-            buttons,
-            x: offsetX,
-            y: offsetY,
-            deltaX: movementX,
-            deltaY: movementY,
-        })
-    }
-
-    private _onWheel(ev: WheelEvent) {
-        const props = this._getCommonEventProps(ev);
-        const { deltaX, deltaY, deltaZ } = ev;
-
-        this.emit('mouse_wheel', {
-            ...props,
-            deltaX, deltaY, deltaZ,
-        });
     }
 
     public appendTo(htmlElement?: HTMLElement) {
@@ -267,30 +151,14 @@ export class ThreeJsBoilerPlate extends Emitter {
             this.raycaster = new Raycaster();
         }
 
-        const pickX = (this._mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
-        const pickY = -(this._mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
+        const pickX = (this.mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
+        const pickY = -(this.mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
 
         this.raycaster.setFromCamera(new Vector2(pickX, pickY), this.camera);
 
         const intersected = this.raycaster.intersectObjects(this.scene.children);
 
         return intersected.length ? intersected[0] : null;
-    }
-
-    public isKeyDown(keyCode: string): boolean {
-        return this._keyStates[keyCode]?.state === 1 ? true : false;
-    }
-
-    public getKeyState(keyCode: string): number {
-        return this._keyStates[keyCode]?.state ?? 0;
-    }
-
-    public isMouseButtonDown(mouseButton: number): boolean {
-        return this._mouseButtonStates[mouseButton]?.state === 1 ? true : false;
-    }
-
-    public getMouseButtonState(button: number): number {
-        return this._mouseButtonStates[button]?.state ?? 0;
     }
 
     public static LoadTexture(url: string): Promise<TextureData> {
