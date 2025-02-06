@@ -2,7 +2,7 @@ import { TextureAtlas, TextureData, ThreeJsBoilerPlate } from '../utils/threejs-
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { rng } from '../utils/rng';
 import { NearestFilter } from 'three';
-import { VoxelWorld } from './voxel-world';
+import { World } from './world';
 
 rng.seed = 42;
 
@@ -23,7 +23,7 @@ ThreeJsBoilerPlate
 
         const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
 
-        const world = new VoxelWorld(textureAtlas, 3);
+        const world = new World(textureAtlas, 3);
         eng.scene.add(world);
 
         eng.clock.run((dt: number) => {

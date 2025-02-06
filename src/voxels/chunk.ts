@@ -2,7 +2,7 @@ import { BufferAttribute, BufferGeometry } from 'three';
 import { TextureAtlas } from '../utils/threejs-boiler-plate';
 import { xyz2i } from './utils';
 
-export class ChunkGeometry extends BufferGeometry {
+export class Chunk extends BufferGeometry {
     private _voxels: Map<string, number>;
 
     constructor(

@@ -1,9 +1,9 @@
 import { Group, Material, Mesh, MeshPhongMaterial } from 'three';
 import { TextureAtlas } from '../utils/threejs-boiler-plate';
-import { ChunkGeometry } from './chunk-geometry';
+import { Chunk } from './chunk';
 import { xyz2i } from './utils';
 
-export class VoxelWorld extends Group {
+export class World extends Group {
     private _chunks: Map<string, Mesh>;
     private _textureAtlas: TextureAtlas;
     private _material: Material;
@@ -60,7 +60,7 @@ export class VoxelWorld extends Group {
                     const cx = x + xo;
                     const cz = z + zo;
 
-                    const chunkGeometry = new ChunkGeometry(this._textureAtlas, this.chunkSize, this.chunkHeight);
+                    const chunkGeometry = new Chunk(this._textureAtlas, this.chunkSize, this.chunkHeight);
                     chunkGeometry.forEachVoxel(() => 1);
 
                     const chunkMesh = new Mesh(chunkGeometry, this._material);
