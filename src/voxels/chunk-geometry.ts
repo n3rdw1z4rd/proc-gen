@@ -1,6 +1,5 @@
 import { BufferAttribute, BufferGeometry } from 'three';
 import { TextureAtlas } from '../utils/threejs-boiler-plate';
-import { FACES } from './faces';
 
 export class ChunkGeometry extends BufferGeometry {
     private _voxels: Map<string, number>;
@@ -101,3 +100,50 @@ export class ChunkGeometry extends BufferGeometry {
         }
     }
 }
+
+const SCALE = 0.5;
+const V = 1.0 * SCALE;
+
+const FACES: Array<Array<number[]>> = [ // [nx, ny, nz, px, py, pz, ux, uy]
+    [ //left
+        [-1, 0, 0, -V, V, -V, 0, 1],
+        [-1, 0, 0, -V, -V, -V, 0, 0],
+        [-1, 0, 0, -V, V, V, 1, 1],
+        [-1, 0, 0, -V, -V, V, 1, 0],
+    ],
+
+    [ //right
+        [1, 0, 0, V, V, V, 0, 1],
+        [1, 0, 0, V, -V, V, 0, 0],
+        [1, 0, 0, V, V, -V, 1, 1],
+        [1, 0, 0, V, -V, -V, 1, 0],
+    ],
+
+    [ //bottom
+        [0, -1, 0, V, -V, V, 1, 0],
+        [0, -1, 0, -V, -V, V, 0, 0],
+        [0, -1, 0, V, -V, -V, 1, 1],
+        [0, -1, 0, -V, -V, -V, 0, 1],
+    ],
+
+    [ //top
+        [0, 1, 0, -V, V, V, 1, 1],
+        [0, 1, 0, V, V, V, 0, 1],
+        [0, 1, 0, -V, V, -V, 1, 0],
+        [0, 1, 0, V, V, -V, 0, 0],
+    ],
+
+    [ //back
+        [0, 0, -1, V, -V, -V, 0, 0],
+        [0, 0, -1, -V, -V, -V, 1, 0],
+        [0, 0, -1, V, V, -V, 0, 1],
+        [0, 0, -1, -V, V, -V, 1, 1],
+    ],
+
+    [ //front
+        [0, 0, 1, -V, -V, V, 0, 0],
+        [0, 0, 1, V, -V, V, 1, 0],
+        [0, 0, 1, -V, V, V, 0, 1],
+        [0, 0, 1, V, V, V, 1, 1],
+    ],
+];
