@@ -1,26 +1,69 @@
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-// import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { rng } from '../utils/rng';
-import { CameraRig } from './camera-rig';
+import { Emitter } from '../utils/emitter';
+import GUI from 'lil-gui';
+import { Object3D } from 'three';
+import { log } from '../utils/logger';
+
+class GuiHelper extends GUI {
+    private _inspectFolder: GUI | undefined;
+
+    constructor() {
+        super();
+
+        this.hide();
+    }
+
+    inspectObect(obj: Object3D | null) {
+        log('inspectObj:', obj);
+
+        this._inspectFolder?.destroy();
+
+        if (obj) {
+            this._inspectFolder = this.addFolder(`${obj.name ?? 'unnamed'} [${obj.type}]`);
+
+            const posFolder = this._inspectFolder.addFolder('Position');
+            posFolder.add(obj.position, 'x');
+            posFolder.add(obj.position, 'y');
+            posFolder.add(obj.position, 'z');
+
+            const rotFolder = this._inspectFolder.addFolder('Rotation');
+            rotFolder.add(obj.rotation, 'x');
+            rotFolder.add(obj.rotation, 'y');
+            rotFolder.add(obj.rotation, 'z');
+
+            this.show();
+        } else this.hide();
+    }
+}
 
 rng.seed = 42;
 
 const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
-    // cameraDistance: 25,
-    // gridHelper: false,
+    gridHelper: false,
 });
 
-eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
+const gui = new GuiHelper();
 
-// const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
-const camera = new CameraRig(eng.camera);
+const cube = ThreeJsBoilerPlate.CreateCubeMesh();
+eng.scene.add(cube);
 
-eng.clock.run((dt: number) => {
+Emitter.instance.on('mouse_button_clicked', (ev: KeyValue) => {
+    if (ev.button === 0) {
+        const picked = eng.pick();
+
+        if (picked) {
+            gui.inspectObect(picked.object);
+        } else {
+            gui.inspectObect(null);
+        }
+    }
+});
+
+eng.clock.run((_dt: number) => {
     eng.resize();
-    // controls.update(dt);
-    camera.update(dt);
     eng.renderer.render(eng.scene, eng.camera);
     eng.clock.showStats();
 });
