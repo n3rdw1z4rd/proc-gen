@@ -1,5 +1,4 @@
 import { Emitter } from './emitter';
-import { log } from './logger';
 
 export interface InputState {
     state: number,
@@ -27,7 +26,6 @@ export class Input extends Emitter {
     public static get GlobalInstance(): Input {
         if (!Input._globalInstance) {
             Input._globalInstance = new Input();
-            log('GlobalInstance created.');
         }
 
         return Input._globalInstance;
@@ -40,6 +38,7 @@ export class Input extends Emitter {
     constructor() {
         super();
 
+        window.addEventListener('contextmenu', this._onContextMenu.bind(this));
         window.addEventListener('keydown', this._onKeyDown.bind(this));
         window.addEventListener('keyup', this._onKeyUp.bind(this));
         window.addEventListener('mousedown', this._onMouseButtonDown.bind(this));
@@ -60,6 +59,12 @@ export class Input extends Emitter {
         };
 
         return props;
+    }
+
+    private _onContextMenu(ev: MouseEvent) {
+        ev.preventDefault();
+        this.emit('contextmenu');
+        return false;
     }
 
     private _onKeyDown(ev: KeyboardEvent) {
