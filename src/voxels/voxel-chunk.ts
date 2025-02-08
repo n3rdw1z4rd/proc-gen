@@ -1,16 +1,27 @@
-import { BufferAttribute, BufferGeometry } from 'three';
-import { TextureAtlas } from '../utils/texture-atlas';
+import { BufferAttribute, Mesh } from 'three';
+import { VoxelMaterial } from '../utils/voxel-material';
 import { xyz2i } from './utils';
 
-export class Chunk extends BufferGeometry {
+export interface ChunkParams {
+
+}
+
+export class VoxelChunk extends Mesh {
+    public readonly size: number;
+    public readonly height: number;
+
     private _voxels: Map<string, number>;
 
     constructor(
-        public textureAtlas: TextureAtlas,
-        public readonly size: number = 16,
-        public readonly height: number = size,
+        size: number,
+        height: number,
+        material: VoxelMaterial,
     ) {
         super();
+
+        this.size = size;
+        this.height = height;
+        this.material = material;
 
         this._voxels = new Map<string, number>();
     }
@@ -29,11 +40,7 @@ export class Chunk extends BufferGeometry {
         for (let x = 0; x < this.size; ++x) {
             for (let y = 0; y < this.height; ++y) {
                 for (let z = 0; z < this.size; ++z) {
-                    const value = callback.bind(this)([x, y, z]);
-
-                    if (value >= 0 && value < this.textureAtlas.maxVoxelNumber) {
-                        this._voxels.set(xyz2i([x, y, z]), value);
-                    }
+                    this._voxels.set(xyz2i([x, y, z]), callback.bind(this)([x, y, z]));
                 }
             }
         }
@@ -64,7 +71,7 @@ export class Chunk extends BufferGeometry {
 
                                 faces.forEach((faceVerts: number[]) => {
                                     const [nx, ny, nz, px, py, pz, _ux, _uy] = faceVerts;
-                                    const [ux, uy] = this.textureAtlas.get(voxel - 1, _ux, _uy);
+                                    const [ux, uy] = (this.material as VoxelMaterial).getVoxelTextureUvs(voxel - 1, _ux, _uy) ?? [0, 0];
 
                                     positions.push(x + px, y + py, z + pz);
                                     normals.push(nx, ny, nz);
@@ -80,66 +87,63 @@ export class Chunk extends BufferGeometry {
                             }
                         });
 
-                        this.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-                        this.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
-                        this.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
+                        this.geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+                        this.geometry.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
+                        this.geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
 
-                        this.setIndex(indices);
+                        this.geometry.setIndex(indices);
                     }
                 }
             }
         }
 
         if (needsUpdate) {
-            this.attributes.position.needsUpdate = true;
-            this.computeVertexNormals();
+            this.geometry.attributes.position.needsUpdate = true;
+            this.geometry.computeVertexNormals();
         }
     }
 }
 
-const SCALE = 0.5;
-const V = 1.0 * SCALE;
-
 const FACES: Array<Array<number[]>> = [ // [nx, ny, nz, px, py, pz, ux, uy]
     [ //left
-        [-1, 0, 0, -V, V, -V, 0, 1],
-        [-1, 0, 0, -V, -V, -V, 0, 0],
-        [-1, 0, 0, -V, V, V, 1, 1],
-        [-1, 0, 0, -V, -V, V, 1, 0],
+        [-1, 0, 0, -1, 1, -1, 0, 1],
+        [-1, 0, 0, -1, -1, -1, 0, 0],
+        [-1, 0, 0, -1, 1, 1, 1, 1],
+        [-1, 0, 0, -1, -1, 1, 1, 0],
     ],
 
     [ //right
-        [1, 0, 0, V, V, V, 0, 1],
-        [1, 0, 0, V, -V, V, 0, 0],
-        [1, 0, 0, V, V, -V, 1, 1],
-        [1, 0, 0, V, -V, -V, 1, 0],
+        [1, 0, 0, 1, 1, 1, 0, 1],
+        [1, 0, 0, 1, -1, 1, 0, 0],
+        [1, 0, 0, 1, 1, -1, 1, 1],
+        [1, 0, 0, 1, -1, -1, 1, 0],
     ],
 
     [ //bottom
-        [0, -1, 0, V, -V, V, 1, 0],
-        [0, -1, 0, -V, -V, V, 0, 0],
-        [0, -1, 0, V, -V, -V, 1, 1],
-        [0, -1, 0, -V, -V, -V, 0, 1],
+        [0, -1, 0, 1, -1, 1, 1, 0],
+        [0, -1, 0, -1, -1, 1, 0, 0],
+        [0, -1, 0, 1, -1, -1, 1, 1],
+        [0, -1, 0, -1, -1, -1, 0, 1],
     ],
 
     [ //top
-        [0, 1, 0, -V, V, V, 1, 1],
-        [0, 1, 0, V, V, V, 0, 1],
-        [0, 1, 0, -V, V, -V, 1, 0],
-        [0, 1, 0, V, V, -V, 0, 0],
+        [0, 1, 0, -1, 1, 1, 1, 1],
+        [0, 1, 0, 1, 1, 1, 0, 1],
+        [0, 1, 0, -1, 1, -1, 1, 0],
+        [0, 1, 0, 1, 1, -1, 0, 0],
     ],
 
     [ //back
-        [0, 0, -1, V, -V, -V, 0, 0],
-        [0, 0, -1, -V, -V, -V, 1, 0],
-        [0, 0, -1, V, V, -V, 0, 1],
-        [0, 0, -1, -V, V, -V, 1, 1],
+        [0, 0, -1, 1, -1, -1, 0, 0],
+        [0, 0, -1, -1, -1, -1, 1, 0],
+        [0, 0, -1, 1, 1, -1, 0, 1],
+        [0, 0, -1, -1, 1, -1, 1, 1],
     ],
 
     [ //front
-        [0, 0, 1, -V, -V, V, 0, 0],
-        [0, 0, 1, V, -V, V, 1, 0],
-        [0, 0, 1, -V, V, V, 0, 1],
-        [0, 0, 1, V, V, V, 1, 1],
+        [0, 0, 1, -1, -1, 1, 0, 0],
+        [0, 0, 1, 1, -1, 1, 1, 0],
+        [0, 0, 1, -1, 1, 1, 0, 1],
+        [0, 0, 1, 1, 1, 1, 1, 1],
     ],
 ];

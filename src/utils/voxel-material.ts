@@ -1,48 +1,48 @@
 import { TextureData } from './threejs-boiler-plate';
-import { MeshLambertMaterial, MeshLambertMaterialParameters, NearestFilter, Texture } from 'three';
+import { MeshLambertMaterial, MeshLambertMaterialParameters, NearestFilter } from 'three';
 import { clamp } from './math';
 
 export interface VoxelMaterialParams {
-    material?: MeshLambertMaterialParameters,
     textureData: TextureData,
     tileWidth: number,
     tileHeight?: number,
+    materialParams?: MeshLambertMaterialParameters,
 }
 
 export class VoxelMaterial extends MeshLambertMaterial {
+    textureData: TextureData;
+
     tileWidth: number;
     tileHeight: number;
-    textureWidth: number;
-    textureHeight: number;
-
-    texture: Texture;
 
     uvxSize: number;
     uvySize: number;
 
     maxVoxelNumber: number;
 
-    constructor(params: VoxelMaterialParams) {
+    constructor(
+        textureData: TextureData,
+        tileWidth: number = 16,
+        tileHeight: number = tileWidth,
+        materialParams: MeshLambertMaterialParameters = {},
+    ) {
+        textureData.texture.magFilter = NearestFilter;
+
         super({
-            map: params.textureData.texture,
+            map: textureData.texture,
             alphaTest: 0.1,
             transparent: true,
-            ...params.material,
+            ...materialParams,
         });
 
-        this.tileWidth = params.tileWidth;
-        this.tileHeight = params.tileHeight ?? this.tileWidth;
+        this.textureData = textureData;
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
 
-        this.textureWidth = params.textureData.width;
-        this.textureHeight = params.textureData.height;
-        this.texture = params.textureData.texture;
+        this.uvxSize = this.tileWidth / this.textureData.width;
+        this.uvySize = this.tileHeight / this.textureData.height;
 
-        this.texture.magFilter = NearestFilter;
-
-        this.uvxSize = this.tileWidth / this.textureWidth;
-        this.uvySize = this.tileHeight / this.textureHeight;
-
-        this.maxVoxelNumber = (this.textureWidth / this.tileWidth) * (this.textureHeight / this.tileHeight);
+        this.maxVoxelNumber = (this.textureData.width / this.tileWidth) * (this.textureData.height / this.tileHeight);
     }
 
     getVoxelTextureUvs(voxel: number, ux: number, uy: number): VEC2 {

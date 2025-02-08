@@ -1,31 +1,36 @@
-import { Group, Material, Mesh, MeshPhongMaterial } from 'three';
-import { TextureAtlas } from '../utils/texture-atlas';
-import { Chunk } from './chunk';
+import { Group } from 'three';
+import { VoxelMaterial } from '../utils/voxel-material';
+import { VoxelChunk } from './voxel-chunk';
 import { xyz2i } from './utils';
+import { rng } from '../utils/rng';
+
+export interface VoxelWorldParams {
+    chunkSize: number,
+    chunkHeight?: number,
+    material: VoxelMaterial,
+}
 
 export class VoxelWorld extends Group {
-    private _chunks: Map<string, Mesh>;
-    private _textureAtlas: TextureAtlas;
-    private _material: Material;
+    public readonly chunkSize: number;
+    public readonly chunkHeight: number;
 
-    private _viewDistance: number = 1;
+    private _chunks: Map<string, VoxelChunk>;
+    private _material: VoxelMaterial;
+
+    private _viewDistance: number = 0;
 
     constructor(
-        textureAtlas: TextureAtlas,
-        public readonly chunkSize: number = 16,
-        public readonly chunkHeight: number = chunkSize,
+        chunkSize: number,
+        chunkHeight: number,
+        material: VoxelMaterial,
     ) {
         super();
 
-        this._chunks = new Map<string, Mesh>();
+        this.chunkSize = chunkSize;
+        this.chunkHeight = chunkHeight;
+        this._material = material;
 
-        this._textureAtlas = textureAtlas;
-
-        this._material = new MeshPhongMaterial({
-            map: this._textureAtlas.texture,
-            alphaTest: 0.1,
-            transparent: true,
-        });
+        this._chunks = new Map();
     }
 
     // public getVoxel(position: VEC3): number {
@@ -47,7 +52,7 @@ export class VoxelWorld extends Group {
     // }
 
     public update(position: VEC3) {
-        const [px, py, pz] = position;
+        const [px, _py, pz] = position;
 
         const x = ((px / this.chunkSize) | 0);
         const z = ((pz / this.chunkSize) | 0);
@@ -60,14 +65,14 @@ export class VoxelWorld extends Group {
                     const cx = x + xo;
                     const cz = z + zo;
 
-                    const chunkGeometry = new Chunk(this._textureAtlas, this.chunkSize, this.chunkHeight);
-                    chunkGeometry.forEachVoxel(() => 1);
+                    const chunk = new VoxelChunk(this.chunkSize, this.chunkHeight, this._material);
 
-                    const chunkMesh = new Mesh(chunkGeometry, this._material);
-                    chunkMesh.position.set(cx * this.chunkSize, 0, cz * this.chunkSize);
+                    chunk.forEachVoxel(() => rng.range(1, 17));
 
-                    this._chunks.set(chunkIndex, chunkMesh);
-                    this.add(chunkMesh);
+                    chunk.position.set(cx * this.chunkSize, 0, cz * this.chunkSize);
+
+                    this._chunks.set(chunkIndex, chunk);
+                    this.add(chunk);
                 }
             }
         }
