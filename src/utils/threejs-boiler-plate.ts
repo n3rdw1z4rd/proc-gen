@@ -3,9 +3,14 @@ import { Clock } from './clock';
 import { Emitter } from './emitter';
 import { Input } from './input';
 import { rng } from './rng';
-import { TextureData } from './texture-atlas';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
 import './main.css';
+
+export interface TextureData {
+    width: number,
+    height: number,
+    texture: Texture,
+}
 
 const emitter = Emitter.instance;
 const input = Input.instance;

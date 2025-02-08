@@ -1,13 +1,15 @@
-import { Texture } from 'three';
+import { TextureData } from './threejs-boiler-plate';
+import { MeshLambertMaterial, MeshLambertMaterialParameters, NearestFilter, Texture } from 'three';
 import { clamp } from './math';
 
-export interface TextureData {
-    width: number,
-    height: number,
-    texture: Texture,
+export interface VoxelMaterialParams {
+    material?: MeshLambertMaterialParameters,
+    textureData: TextureData,
+    tileWidth: number,
+    tileHeight?: number,
 }
 
-export class TextureAtlas {
+export class VoxelMaterial extends MeshLambertMaterial {
     tileWidth: number;
     tileHeight: number;
     textureWidth: number;
@@ -20,13 +22,22 @@ export class TextureAtlas {
 
     maxVoxelNumber: number;
 
-    constructor(textureData: TextureData, tileWidth: number = 16, tileHeight: number = tileWidth) {
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+    constructor(params: VoxelMaterialParams) {
+        super({
+            map: params.textureData.texture,
+            alphaTest: 0.1,
+            transparent: true,
+            ...params.material,
+        });
 
-        this.textureWidth = textureData.width;
-        this.textureHeight = textureData.height;
-        this.texture = textureData.texture;
+        this.tileWidth = params.tileWidth;
+        this.tileHeight = params.tileHeight ?? this.tileWidth;
+
+        this.textureWidth = params.textureData.width;
+        this.textureHeight = params.textureData.height;
+        this.texture = params.textureData.texture;
+
+        this.texture.magFilter = NearestFilter;
 
         this.uvxSize = this.tileWidth / this.textureWidth;
         this.uvySize = this.tileHeight / this.textureHeight;
@@ -34,7 +45,7 @@ export class TextureAtlas {
         this.maxVoxelNumber = (this.textureWidth / this.tileWidth) * (this.textureHeight / this.tileHeight);
     }
 
-    get(voxel: number, ux: number, uy: number): [number, number] {
+    getVoxelTextureUvs(voxel: number, ux: number, uy: number): VEC2 {
         voxel = clamp(voxel, 0, this.maxVoxelNumber);
 
         const uvx = (voxel + ux) * this.uvxSize;
