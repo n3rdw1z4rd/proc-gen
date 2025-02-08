@@ -3,7 +3,7 @@ import { TextureAtlas } from '../utils/texture-atlas';
 import { Chunk } from './chunk';
 import { xyz2i } from './utils';
 
-export class World extends Group {
+export class VoxelWorld extends Group {
     private _chunks: Map<string, Mesh>;
     private _textureAtlas: TextureAtlas;
     private _material: Material;

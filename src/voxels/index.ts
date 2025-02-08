@@ -1,7 +1,7 @@
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
 import { NearestFilter } from 'three';
-import { World } from './world';
+import { VoxelWorld } from './voxel-world';
 import { TextureAtlas, TextureData } from '../utils/texture-atlas';
 import { log } from '../utils/logger';
 
@@ -24,7 +24,7 @@ ThreeJsBoilerPlate
             gridHelper: false,
         });
 
-        const world = new World(textureAtlas, 3);
+        const world = new VoxelWorld(textureAtlas, 3);
         eng.scene.add(world);
 
         eng.clock.run((dt: number) => {
