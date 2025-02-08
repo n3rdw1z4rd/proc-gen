@@ -1,3 +1,2 @@
 // import './terrain-fun';
-// import './voxels';
-import './blender-lol';
+import './voxels';
