@@ -1,5 +1,5 @@
 import { Group, Material, Mesh, MeshPhongMaterial } from 'three';
-import { TextureAtlas } from '../utils/threejs-boiler-plate';
+import { TextureAtlas } from '../utils/texture-atlas';
 import { Chunk } from './chunk';
 import { xyz2i } from './utils';
 

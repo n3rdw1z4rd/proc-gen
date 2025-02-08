@@ -1,5 +1,5 @@
 import { BufferAttribute, BufferGeometry } from 'three';
-import { TextureAtlas } from '../utils/threejs-boiler-plate';
+import { TextureAtlas } from '../utils/texture-atlas';
 import { xyz2i } from './utils';
 
 export class Chunk extends BufferGeometry {
