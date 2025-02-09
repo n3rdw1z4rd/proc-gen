@@ -1,6 +1,6 @@
 import { Group } from 'three';
 import { VoxelMaterial } from '../utils/voxel-material';
-import { VoxelChunk } from './voxel-chunk';
+import { VoxelMesh } from './voxel-mesh';
 import { xyz2i } from './utils';
 import { rng } from '../utils/rng';
 import { log } from '../utils/logger';
@@ -15,7 +15,7 @@ export class VoxelWorld extends Group {
     public readonly chunkSize: number;
     public readonly chunkHeight: number;
 
-    private _chunks: Map<string, VoxelChunk>;
+    private _chunks: Map<string, VoxelMesh>;
     private _material: VoxelMaterial;
 
     private _viewDistance: number = 0;
@@ -70,7 +70,7 @@ export class VoxelWorld extends Group {
 
                     log('chunkIndex:', chunkIndex, cx, cz);
 
-                    const chunk = new VoxelChunk({
+                    const chunk = new VoxelMesh({
                         size: this.chunkSize,
                         height: this.chunkHeight,
                         material: this._material,
