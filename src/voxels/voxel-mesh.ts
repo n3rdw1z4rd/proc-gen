@@ -1,20 +1,20 @@
-import { BufferAttribute, Material, Mesh } from 'three';
+import { BufferAttribute, Mesh } from 'three';
 import { VoxelMaterial } from '../utils/voxel-material';
 import { xyz2i } from './utils';
 
-export interface VoxelChunkParams {
+export interface VoxelMeshParams {
     size?: number,
     height?: number,
-    material: Material
+    material: VoxelMaterial,
 }
 
-export class VoxelChunk extends Mesh {
+export class VoxelMesh extends Mesh {
     public readonly size: number;
     public readonly height: number;
 
     private _voxels: Map<string, number>;
 
-    constructor(params: VoxelChunkParams) {
+    constructor(params: VoxelMeshParams) {
         super();
 
         this.size = Math.floor(params.size ?? 16);
@@ -60,7 +60,7 @@ export class VoxelChunk extends Mesh {
                     const voxel = this.get([x, y, z]);
 
                     if (voxel) {
-                        FACES.forEach((faces: Array<number[]>) => {
+                        VoxelFaces.forEach((faces: Array<number[]>) => {
                             const [dx, dy, dz] = faces[0];
                             const neighborVoxel = this.get([x + dx, y + dy, z + dz]);
 
@@ -68,12 +68,14 @@ export class VoxelChunk extends Mesh {
                                 const positionIndex = positions.length / 3;
 
                                 faces.forEach((faceVerts: number[]) => {
-                                    const [nx, ny, nz, px, py, pz, _ux, _uy] = faceVerts;
-                                    const [ux, uy] = (this.material as VoxelMaterial).getVoxelTextureUvs(voxel - 1, _ux, _uy) ?? [0, 0];
+                                    const [nx, ny, nz, px, py, pz, ux, uy] = faceVerts;
 
                                     positions.push(x + px, y + py, z + pz);
                                     normals.push(nx, ny, nz);
-                                    uvs.push(ux, uy);
+                                    uvs.push(
+                                        (voxel - 1 + ux) * (this.material as VoxelMaterial).uvWidth,
+                                        1 - (1 - uy) * (this.material as VoxelMaterial).uvHeight,
+                                    );
                                 });
 
                                 indices.push(
@@ -102,46 +104,46 @@ export class VoxelChunk extends Mesh {
     }
 }
 
-const FACES: Array<Array<number[]>> = [ // [nx, ny, nz, px, py, pz, ux, uy]
+const VoxelFaces: Array<Array<number[]>> = [ // [nx, ny, nz, px, py, pz, ux, uy]
     [ //left
-        [-1, 0, 0, -1, 1, -1, 0, 1],
-        [-1, 0, 0, -1, -1, -1, 0, 0],
-        [-1, 0, 0, -1, 1, 1, 1, 1],
-        [-1, 0, 0, -1, -1, 1, 1, 0],
+        [-1, 0, 0, -0.5, 0.5, -0.5, 0, 1],
+        [-1, 0, 0, -0.5, -0.5, -0.5, 0, 0],
+        [-1, 0, 0, -0.5, 0.5, 0.5, 1, 1],
+        [-1, 0, 0, -0.5, -0.5, 0.5, 1, 0],
     ],
 
     [ //right
-        [1, 0, 0, 1, 1, 1, 0, 1],
-        [1, 0, 0, 1, -1, 1, 0, 0],
-        [1, 0, 0, 1, 1, -1, 1, 1],
-        [1, 0, 0, 1, -1, -1, 1, 0],
+        [1, 0, 0, 0.5, 0.5, 0.5, 0, 1],
+        [1, 0, 0, 0.5, -0.5, 0.5, 0, 0],
+        [1, 0, 0, 0.5, 0.5, -0.5, 1, 1],
+        [1, 0, 0, 0.5, -0.5, -0.5, 1, 0],
     ],
 
     [ //bottom
-        [0, -1, 0, 1, -1, 1, 1, 0],
-        [0, -1, 0, -1, -1, 1, 0, 0],
-        [0, -1, 0, 1, -1, -1, 1, 1],
-        [0, -1, 0, -1, -1, -1, 0, 1],
+        [0, -1, 0, 0.5, -0.5, 0.5, 1, 0],
+        [0, -1, 0, -0.5, -0.5, 0.5, 0, 0],
+        [0, -1, 0, 0.5, -0.5, -0.5, 1, 1],
+        [0, -1, 0, -0.5, -0.5, -0.5, 0, 1],
     ],
 
     [ //top
-        [0, 1, 0, -1, 1, 1, 1, 1],
-        [0, 1, 0, 1, 1, 1, 0, 1],
-        [0, 1, 0, -1, 1, -1, 1, 0],
-        [0, 1, 0, 1, 1, -1, 0, 0],
+        [0, 1, 0, -0.5, 0.5, 0.5, 1, 1],
+        [0, 1, 0, 0.5, 0.5, 0.5, 0, 1],
+        [0, 1, 0, -0.5, 0.5, -0.5, 1, 0],
+        [0, 1, 0, 0.5, 0.5, -0.5, 0, 0],
     ],
 
     [ //back
-        [0, 0, -1, 1, -1, -1, 0, 0],
-        [0, 0, -1, -1, -1, -1, 1, 0],
-        [0, 0, -1, 1, 1, -1, 0, 1],
-        [0, 0, -1, -1, 1, -1, 1, 1],
+        [0, 0, -1, 0.5, -0.5, -0.5, 0, 0],
+        [0, 0, -1, -0.5, -0.5, -0.5, 1, 0],
+        [0, 0, -1, 0.5, 0.5, -0.5, 0, 1],
+        [0, 0, -1, -0.5, 0.5, -0.5, 1, 1],
     ],
 
     [ //front
-        [0, 0, 1, -1, -1, 1, 0, 0],
-        [0, 0, 1, 1, -1, 1, 1, 0],
-        [0, 0, 1, -1, 1, 1, 0, 1],
-        [0, 0, 1, 1, 1, 1, 1, 1],
+        [0, 0, 1, -0.5, -0.5, 0.5, 0, 0],
+        [0, 0, 1, 0.5, -0.5, 0.5, 1, 0],
+        [0, 0, 1, -0.5, 0.5, 0.5, 0, 1],
+        [0, 0, 1, 0.5, 0.5, 0.5, 1, 1],
     ],
 ];

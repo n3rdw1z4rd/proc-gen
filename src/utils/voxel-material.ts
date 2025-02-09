@@ -1,6 +1,5 @@
-import { TextureData } from './threejs-boiler-plate';
 import { MeshLambertMaterial, MeshLambertMaterialParameters, NearestFilter } from 'three';
-import { clamp } from './math';
+import { TextureData } from './threejs-boiler-plate';
 
 export interface VoxelMaterialParams {
     textureData: TextureData,
@@ -15,42 +14,30 @@ export class VoxelMaterial extends MeshLambertMaterial {
     tileWidth: number;
     tileHeight: number;
 
-    uvxSize: number;
-    uvySize: number;
+    uvWidth: number;
+    uvHeight: number;
 
     maxVoxelNumber: number;
 
-    constructor(
-        textureData: TextureData,
-        tileWidth: number = 16,
-        tileHeight: number = tileWidth,
-        materialParams: MeshLambertMaterialParameters = {},
-    ) {
-        textureData.texture.magFilter = NearestFilter;
-
+    constructor(params: VoxelMaterialParams) {
         super({
-            map: textureData.texture,
+            map: params.textureData.texture,
             alphaTest: 0.1,
             transparent: true,
-            ...materialParams,
+            ...params.materialParams ?? {},
         });
 
-        this.textureData = textureData;
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
 
-        this.uvxSize = this.tileWidth / this.textureData.width;
-        this.uvySize = this.tileHeight / this.textureData.height;
+        this.textureData = params.textureData;
+
+        this.tileWidth = params.tileWidth;
+        this.tileHeight = params.tileHeight ?? this.tileWidth;
+
+        this.uvWidth = this.tileWidth / this.textureData.width;
+        this.uvHeight = this.tileHeight / this.textureData.height;
+
+        this.textureData.texture.magFilter = NearestFilter;
 
         this.maxVoxelNumber = (this.textureData.width / this.tileWidth) * (this.textureData.height / this.tileHeight);
-    }
-
-    getVoxelTextureUvs(voxel: number, ux: number, uy: number): VEC2 {
-        voxel = clamp(voxel, 0, this.maxVoxelNumber);
-
-        const uvx = (voxel + ux) * this.uvxSize;
-        const uvy = 1 - (1 - uy) * this.uvySize;
-
-        return [uvx, uvy];
     }
 }
