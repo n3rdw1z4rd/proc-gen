@@ -1,4 +1,5 @@
 declare type VEC2 = [number, number];
+declare type UV = [number, number];
 declare type VEC3 = [number, number, number];
 
 declare type KeyValue = { [key: string]: any };
