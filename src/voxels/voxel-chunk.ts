@@ -1,9 +1,11 @@
-import { BufferAttribute, Mesh } from 'three';
+import { BufferAttribute, Material, Mesh } from 'three';
 import { VoxelMaterial } from '../utils/voxel-material';
 import { xyz2i } from './utils';
 
-export interface ChunkParams {
-
+export interface VoxelChunkParams {
+    size?: number,
+    height?: number,
+    material: Material
 }
 
 export class VoxelChunk extends Mesh {
@@ -12,16 +14,12 @@ export class VoxelChunk extends Mesh {
 
     private _voxels: Map<string, number>;
 
-    constructor(
-        size: number,
-        height: number,
-        material: VoxelMaterial,
-    ) {
+    constructor(params: VoxelChunkParams) {
         super();
 
-        this.size = size;
-        this.height = height;
-        this.material = material;
+        this.size = Math.floor(params.size ?? 16);
+        this.height = Math.floor(params.height ?? this.size);
+        this.material = params.material;
 
         this._voxels = new Map<string, number>();
     }

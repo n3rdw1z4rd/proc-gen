@@ -15,20 +15,22 @@ ThreeJsBoilerPlate
         const eng = new ThreeJsBoilerPlate();
         eng.appendTo(document.getElementById('ROOT')!);
         eng.setupBasicScene({
-            cameraDistance: 25,
+            cameraDistance: 5,
             gridHelper: false,
         });
 
-        const voxelMaterial: VoxelMaterial = new VoxelMaterial(textureData, 16);
+        const voxelMaterial: VoxelMaterial = new VoxelMaterial(textureData, 16, 16, { wireframe: true });
 
-        const world = new VoxelWorld(1, 1, voxelMaterial);
+        const chunkSize = 2;
+        const world = new VoxelWorld(chunkSize, chunkSize, voxelMaterial);
         eng.scene.add(world);
 
         eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
+        world.update([0, 0, 0]);
+        
         eng.clock.run((_dt: number) => {
             eng.resize();
-            world.update([0, 0, 0]);
             eng.renderer.render(eng.scene, eng.camera);
             eng.clock.showStats();
         });
