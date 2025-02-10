@@ -24,38 +24,39 @@ export class TerrainMesh extends Mesh {
     public createGeometry(
         heightFunc?: (x: number, y: number, z: number) => number
     ) {
+        // CREDIT: https://github.com/mrdoob/three.js/blob/master/examples/webgl_buffergeometry_indexed.html
+
         const indices = [];
         const vertices = [];
         const normals = [];
+        // const uvs = []; // TODO: implement textures, and TextureAtlas
         const colors = [];
 
         const halfSize = this.size / 2;
         const segmentSize = this.size / this.segments;
 
-        for (let i = 0; i <= this.segments; i++) {
-            for (let j = 0; j <= this.segments; j++) {
-                const x = (j * segmentSize) - halfSize;
-                const z = (i * segmentSize) - halfSize;
+        for (let zSeg = 0; zSeg <= this.segments; zSeg++) {
+            for (let xSeg = 0; xSeg <= this.segments; xSeg++) {
+                const x = (xSeg * segmentSize) - halfSize;
+                const z = (zSeg * segmentSize) - halfSize;
                 const y = heightFunc ? heightFunc(x, 0, z) : 0;
                 const c = clamp(y, this.minColor, 1.0);
 
                 vertices.push(x, y, z);
                 normals.push(0, 1, 0);
+                // uvs.push(uvx, uvy); // TODO: implement textures, and TextureAtlas
                 colors.push(c, c, c);
             }
         }
 
-        for (let i = 0; i < this.segments; i++) {
-            for (let j = 0; j < this.segments; j++) {
-                const a = i * (this.segments + 1) + (j + 1);
-                const b = i * (this.segments + 1) + j;
-                const c = (i + 1) * (this.segments + 1) + j;
-                const d = (i + 1) * (this.segments + 1) + (j + 1);
+        for (let zSeg = 0; zSeg < this.segments; zSeg++) {
+            for (let xSeg = 0; xSeg < this.segments; xSeg++) {
+                const a = zSeg * (this.segments + 1) + (xSeg + 1);
+                const b = zSeg * (this.segments + 1) + xSeg;
+                const c = (zSeg + 1) * (this.segments + 1) + xSeg;
+                const d = (zSeg + 1) * (this.segments + 1) + (xSeg + 1);
 
-                // generate two faces (triangles) per iteration
-
-                indices.push(a, b, d); // face one
-                indices.push(b, c, d); // face two
+                indices.push(a, b, d, b, c, d);
             }
         }
 
@@ -64,6 +65,7 @@ export class TerrainMesh extends Mesh {
         geometry.setIndex(indices);
         geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
         geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
+        // geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2)); // TODO: implement textures, and TextureAtlas
         geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
 
         this.geometry = geometry;
