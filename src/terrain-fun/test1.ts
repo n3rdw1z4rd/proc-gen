@@ -4,8 +4,13 @@ import { rng } from '../utils/rng';
 import { World, WorldParams } from './world';
 import { ThreeJsPlayerController } from '../utils/threejs-player-controller';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { Emitter } from '../utils/emitter';
+import { Input } from '../utils/input';
 
 rng.seed = 42;
+
+const emitter = Emitter.instance;
+const input = Input.instance;
 
 const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
@@ -33,19 +38,19 @@ eng.scene.add(player);
 
 player.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
-eng.on('mouse_move', (ev: KeyValue) => {
-    if (eng.isMouseButtonDown(0)) {
+emitter.on('mouse_move', (ev: KeyValue) => {
+    if (input.isMouseButtonDown(0)) {
         player.cameraRig.orbit(ev.deltaX, ev.deltaY);
     }
 });
 
-eng.on('mouse_wheel', (ev: KeyValue) => {
+emitter.on('mouse_wheel', (ev: KeyValue) => {
     player.cameraRig.dolly(ev.deltaY);
 });
 
 let picked: Object3D | null = null;
 
-eng.on('mouse_button_clicked', (ev: KeyValue) => {
+emitter.on('mouse_button_clicked', (ev: KeyValue) => {
     if (ev.button === 0) {
         picked = eng.pick()?.object ?? null;
     }
@@ -59,8 +64,8 @@ eng.clock.run((deltaTime: number) => {
     eng.resize();
     controls.update(deltaTime);
 
-    player.velocity.x = (eng.getKeyState('KeyD') - eng.getKeyState('KeyA'))
-    player.velocity.z = (eng.getKeyState('KeyS') - eng.getKeyState('KeyW'));
+    player.velocity.x = (input.getKeyState('KeyD') - input.getKeyState('KeyA'))
+    player.velocity.z = (input.getKeyState('KeyS') - input.getKeyState('KeyW'));
     player.update(deltaTime);
 
     world.update(deltaTime, player.position);

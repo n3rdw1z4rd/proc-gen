@@ -1,7 +1,5 @@
 import { PlaneGeometry, Vector3 } from 'three';
-import { SimplexNoise } from '../utils/simplex-noise';
-import { log } from '../utils/logger';
-import { rng } from '../utils/rng';
+import { fractal3d } from '../utils/noise';
 
 export interface TerrainGeometryParams {
     position?: Vector3,
@@ -62,17 +60,14 @@ export class TerrainGeometry extends PlaneGeometry {
 
     private _createChunkGeometry() {
         if (this.segments > 1) {
-            const noise = new SimplexNoise();
-
-            this._forEachTerrainVertex((x: number, y: number, z: number) => {
-                return noise.fractalNoise3d(
-                    x, y, z,
-                    this._octaves,
-                    this._frequency,
-                    this._persistence,
-                    this._amplitude,
-                );
-            });
+            this._forEachTerrainVertex((x: number, y: number, z: number) =>
+                fractal3d(x, y, z, {
+                    octaves: this._octaves,
+                    frequency: this._frequency,
+                    persistence: this._persistence,
+                    amplitude: this._amplitude,
+                })
+            );
         }
     }
 

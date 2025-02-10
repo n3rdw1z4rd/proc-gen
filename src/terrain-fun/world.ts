@@ -1,5 +1,5 @@
 import { CircleGeometry, Group, Material, Mesh, MeshLambertMaterial, PlaneGeometry, Vector3 } from 'three';
-import { SimplexNoise } from '../utils/simplex-noise';
+import { fractal2d } from '../utils/noise';
 
 export interface WorldParams {
     chunkSize?: number;
@@ -27,7 +27,6 @@ export class World extends Group {
     private _amplitude: number;
 
     private _chunks = new Map<string, Mesh>();
-    private _noise = new SimplexNoise();
 
     constructor(params?: WorldParams) {
         super();
@@ -75,14 +74,14 @@ export class World extends Group {
                     const yi = xi + 1
                     const zi = yi + 1;
 
-                    vertices.array[yi] = this._noise.fractalNoise2d(
+                    vertices.array[yi] = fractal2d(
                         vertices.array[xi] + x,
-                        vertices.array[zi] + z,
-                        this._octaves,
-                        this._frequency,
-                        this._persistence,
-                        this._amplitude,
-                    );
+                        vertices.array[zi] + z, {
+                        octaves: this._octaves,
+                        frequency: this._frequency,
+                        persistence: this._persistence,
+                        amplitude: this._amplitude,
+                    });
                 }
 
                 geometry.attributes.position.needsUpdate = true;
@@ -158,5 +157,4 @@ export class World extends Group {
     public get amplitude(): number {
         return this._amplitude;
     }
-
 }

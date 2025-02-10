@@ -1,5 +1,5 @@
 import { Material, Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
-import { SimplexNoise } from '../utils/simplex-noise';
+import { fractal2d } from '../utils/noise';
 
 export interface TerrainChunkParams {
     octaves: number,
@@ -38,7 +38,6 @@ export class TerrainChunk extends Mesh {
     }
 
     private _generate() {
-        const noise = new SimplexNoise();
         const vertices = this.geometry.getAttribute('position');
 
         if (vertices) {
@@ -47,14 +46,14 @@ export class TerrainChunk extends Mesh {
                 const yi = xi + 1
                 const zi = yi + 1;
 
-                vertices.array[yi] = noise.fractalNoise2d(
+                vertices.array[yi] = fractal2d(
                     vertices.array[xi],
-                    vertices.array[zi],
-                    this._octaves,
-                    this._frequency,
-                    this._persistence,
-                    this._amplitude,
-                );
+                    vertices.array[zi], {
+                    octaves: this._octaves,
+                    frequency: this._frequency,
+                    persistence: this._persistence,
+                    amplitude: this._amplitude,
+                });
             }
 
             this.geometry.attributes.position.needsUpdate = true;
