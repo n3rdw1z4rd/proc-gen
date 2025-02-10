@@ -1,11 +1,11 @@
 import { BufferAttribute, Mesh } from 'three';
-import { VoxelMaterial } from '../utils/voxel-material';
 import { xyz2i } from './utils';
+import { TextureAtlas } from '../utils/texture-atlas';
 
 export interface VoxelMeshParams {
     size?: number,
     height?: number,
-    material: VoxelMaterial,
+    material: TextureAtlas,
 }
 
 export class VoxelMesh extends Mesh {
@@ -19,6 +19,7 @@ export class VoxelMesh extends Mesh {
 
         this.size = Math.floor(params.size ?? 16);
         this.height = Math.floor(params.height ?? this.size);
+
         this.material = params.material;
 
         this._voxels = new Map<string, number>();
@@ -72,10 +73,7 @@ export class VoxelMesh extends Mesh {
 
                                     positions.push(x + px, y + py, z + pz);
                                     normals.push(nx, ny, nz);
-                                    uvs.push(
-                                        (voxel - 1 + ux) * (this.material as VoxelMaterial).uvWidth,
-                                        1 - (1 - uy) * (this.material as VoxelMaterial).uvHeight,
-                                    );
+                                    uvs.push(...(this.material as TextureAtlas).getUv(voxel - 1, ux, uy));
                                 });
 
                                 indices.push(

@@ -1,14 +1,15 @@
 import { Group } from 'three';
-import { VoxelMaterial } from '../utils/voxel-material';
 import { VoxelMesh } from './voxel-mesh';
 import { xyz2i } from './utils';
-import { rng } from '../utils/rng';
-import { log } from '../utils/logger';
+import { TextureAtlas } from '../utils/texture-atlas';
+
+export type NewChunkFunction = (position: VEC3) => number;
 
 export interface VoxelWorldParams {
-    chunkSize: number,
+    chunkSize?: number,
     chunkHeight?: number,
-    material: VoxelMaterial,
+    material: TextureAtlas,
+    newChunkFunction?: NewChunkFunction,
 }
 
 export class VoxelWorld extends Group {
@@ -16,20 +17,18 @@ export class VoxelWorld extends Group {
     public readonly chunkHeight: number;
 
     private _chunks: Map<string, VoxelMesh>;
-    private _material: VoxelMaterial;
+    private _material: TextureAtlas;
 
-    private _viewDistance: number = 0;
+    public viewDistance: number = 0;
+    public newChunkFunction: NewChunkFunction | undefined;
 
-    constructor(
-        chunkSize: number,
-        chunkHeight: number,
-        material: VoxelMaterial,
-    ) {
+    constructor(params: VoxelWorldParams) {
         super();
 
-        this.chunkSize = Math.floor(chunkSize);
-        this.chunkHeight = Math.floor(chunkHeight);
-        this._material = material;
+        this.chunkSize = Math.floor(params.chunkSize ?? 16);
+        this.chunkHeight = Math.floor(params.chunkHeight ?? this.chunkSize);
+        this.newChunkFunction = params.newChunkFunction;
+        this._material = params.material;;
 
         this._chunks = new Map();
 
@@ -54,21 +53,29 @@ export class VoxelWorld extends Group {
 
     // }
 
+    public updateChunk(pos: VEC2) {
+        const [px, pz] = pos;
+        const chunk = this._chunks.get(xyz2i([px, 0, pz]));
+        chunk?.updateGeometry();
+    }
+
+    public updateChunks() {
+        this._chunks.forEach((chunk: VoxelMesh) => chunk.updateGeometry());
+    }
+
     public update(position: VEC3 = [0, 0, 0]) {
         const [px, _py, pz] = position;
 
         const x = ((px / this.chunkSize) | 0);
         const z = ((pz / this.chunkSize) | 0);
 
-        for (let xo = -this._viewDistance; xo <= this._viewDistance; xo++) {
-            for (let zo = -this._viewDistance; zo <= this._viewDistance; zo++) {
+        for (let xo = -this.viewDistance; xo <= this.viewDistance; xo++) {
+            for (let zo = -this.viewDistance; zo <= this.viewDistance; zo++) {
                 const chunkIndex = xyz2i([x + xo, 0, z + zo]);
 
                 if (!this._chunks.get(chunkIndex)) {
-                    const cx = (x + xo) * this.chunkSize;
-                    const cz = (z + zo) * this.chunkSize;
-
-                    log('chunkIndex:', chunkIndex, cx, cz);
+                    const cx = Math.floor((x + xo) * this.chunkSize);
+                    const cz = Math.floor((z + zo) * this.chunkSize);
 
                     const chunk = new VoxelMesh({
                         size: this.chunkSize,
@@ -76,9 +83,13 @@ export class VoxelWorld extends Group {
                         material: this._material,
                     });
 
-                    chunk.forEachVoxel(() => rng.range(1, 17));
-
                     chunk.position.set(cx, 0, cz);
+
+                    chunk.forEachVoxel((pos: VEC3) => {
+                        return this.newChunkFunction
+                            ? this.newChunkFunction.bind(chunk)(pos)
+                            : 1;
+                    });
 
                     this._chunks.set(chunkIndex, chunk);
                     this.add(chunk);

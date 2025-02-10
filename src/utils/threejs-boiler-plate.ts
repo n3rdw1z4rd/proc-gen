@@ -1,16 +1,10 @@
-import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Texture, TextureLoader, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
 import { Clock } from './clock';
 import { Emitter } from './emitter';
 import { Input } from './input';
 import { rng } from './rng';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
 import './main.css';
-
-export interface TextureData {
-    width: number,
-    height: number,
-    texture: Texture,
-}
 
 const emitter = Emitter.instance;
 const input = Input.instance;
@@ -124,21 +118,6 @@ export class ThreeJsBoilerPlate {
         const intersected = this.raycaster.intersectObjects(this.scene.children);
 
         return intersected.length ? intersected[0] : null;
-    }
-
-    public static LoadTexture(url: string): Promise<TextureData> {
-        return new Promise<TextureData>((res, rej) => {
-            (new TextureLoader()).load(
-                url,
-                (texture: Texture) => {
-                    const width = texture.source.data.width;
-                    const height = texture.source.data.height;
-                    res({ width, height, texture });
-                },
-                (_ev) => { },
-                (err) => rej(err),
-            );
-        });
     }
 
     public static CreateCubeMesh(size: number = 1, color: ColorRepresentation = 0xff0000): Mesh {
