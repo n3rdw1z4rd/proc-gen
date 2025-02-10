@@ -1,49 +1,52 @@
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
-import { TerrainGeometry } from './terrain-geometry';
-import { Mesh, MeshPhongMaterial } from 'three';
+import { MeshLambertMaterial } from 'three';
+import { TerrainMesh } from './terrain-mesh';
+import { createFractalNoise2D, FractalNoiseParams } from '../utils/noise';
 import GUI from 'lil-gui';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 rng.seed = 42;
 
 const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
-
 eng.setupBasicScene({
-    cameraDistance: 25,
+    cameraDistance: 5,
     gridHelper: false,
 });
 
-const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
-
-const terrainGeometry = new TerrainGeometry(20, 20, {
-    // octaves: 3,
-    // frequency: 0.01,
-    // persistence: 3,
-    // amplitude: 1,
+const terrainMaterial = new MeshLambertMaterial({
+    // color: 0x00ff00,
+    flatShading: true,
+    vertexColors: true,
+    // wireframe: true,
 });
 
-const terrain = new Mesh(
-    terrainGeometry,
-    new MeshPhongMaterial({
-        color: 0x00aa00,
-        // flatShading: true,
-        wireframe: true,
-    }),
-);
-
+const terrain = new TerrainMesh(20, 100, terrainMaterial);
+terrain.minColor = 0.1;
 eng.scene.add(terrain);
 
-eng.clock.run((dt: number) => {
+const noise = createFractalNoise2D();
+const fractalParams: FractalNoiseParams = {
+    octaves: 3,
+    frequency: 0.05,
+    persistence: 0.5,
+    amplitude: 4,
+};
+
+
+eng.clock.run((_dt: number) => {
     eng.resize();
-    controls.update(dt);
     eng.renderer.render(eng.scene, eng.camera);
     eng.clock.showStats();
-})
+});
+
+const update = (_v?: number) => terrain.createGeometry((x: number, _y: number, z: number) => noise(x, z, fractalParams));
+
+update();
 
 const gui = new GUI();
-gui.add(terrainGeometry, 'octaves', 1, 10, 1);
-gui.add(terrainGeometry, 'frequency', 0.01, 1.0, 0.01);
-gui.add(terrainGeometry, 'persistence', 0.0, 10.0, 0.01);
-gui.add(terrainGeometry, 'amplitude', 0.1, 10.0, 0.01);
+gui.add(fractalParams, 'octaves', 1, 10, 1).onChange(update);
+gui.add(fractalParams, 'frequency', 0.01, 1.0, 0.01).onChange(update);
+gui.add(fractalParams, 'persistence', 0.0, 10.0, 0.01).onChange(update);
+gui.add(fractalParams, 'amplitude', 0.1, 10.0, 0.01).onChange(update);
+gui.add(terrainMaterial, 'wireframe')

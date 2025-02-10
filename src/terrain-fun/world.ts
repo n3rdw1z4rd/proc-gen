@@ -1,98 +1,103 @@
-import { CircleGeometry, Group, Material, Mesh, MeshLambertMaterial, PlaneGeometry, Vector3 } from 'three';
-import { fractal2d } from '../utils/noise';
+import { Group, Material, Vector3 } from 'three';
+import { TerrainMesh } from './terrain-mesh';
+import { createFractalNoise2D, FractalNoiseParams } from '../utils/noise';
+import { log } from '../utils/logger';
 
-export interface WorldParams {
-    chunkSize?: number;
-    chunkResolution?: number;
-    viewDistance?: number;
-    material?: Material;
-    octaves?: number;
-    frequency?: number;
-    persistence?: number;
-    amplitude?: number;
-}
+const noise = createFractalNoise2D();
+log('noise:', noise(0, 0, {
+    octaves: 3,
+    frequency: 0.05,
+    persistence: 0.5,
+    amplitude: 4,
+}));
 
 export class World extends Group {
-    private _chunkSize: number;
-    private _chunkResolution: number;
-    private _material: Material;
+    public readonly chunkSize: number;
+    public readonly chunkResolution: number;
 
+    public material: Material;
     public viewDistance: number;
+    public noiseParams: FractalNoiseParams;
+
     public generateStepAmount: number;
-    private _viewDistanceMesh: Mesh;
 
-    private _octaves: number;
-    private _frequency: number;
-    private _persistence: number;
-    private _amplitude: number;
+    // private _viewDistanceMesh: Mesh;
+    private _chunks = new Map<string, TerrainMesh>();
 
-    private _chunks = new Map<string, Mesh>();
-
-    constructor(params?: WorldParams) {
+    constructor(
+        chunkSize: number,
+        chunkResolution: number,
+        material: Material,
+        noiseParams?: FractalNoiseParams,
+    ) {
         super();
 
-        this._chunkSize = params?.chunkSize ?? 100;
-        this._chunkResolution = params?.chunkResolution ?? Math.floor(this._chunkSize / 2);
-        this.generateStepAmount = Math.floor(this.chunkSize / 4);
+        this.chunkSize = Math.abs(Math.floor(chunkSize));
+        this.chunkResolution = Math.abs(Math.floor(chunkResolution));
 
-        this.viewDistance = params?.viewDistance ?? Math.floor(this._chunkSize * 2);
+        this.material = material;
 
-        this._octaves = params?.octaves ?? 4;
-        this._frequency = params?.frequency ?? 0.5;
-        this._persistence = params?.persistence ?? 0.5;
-        this._amplitude = params?.amplitude ?? 1.0;
-
-        this._material = params?.material ?? new MeshLambertMaterial({
-            color: 0x006600,
-            wireframe: true,
-        });
-
-        this._viewDistanceMesh = new Mesh(
-            new CircleGeometry(this.viewDistance, 12, 0, Math.PI * 2),
-            new MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 }),
-        );
-        this._viewDistanceMesh.rotateX(Math.PI * -0.5);
-        this.add(this._viewDistanceMesh);
-    }
-
-    private _createChunkGeometry(x: number, z: number): PlaneGeometry {
-        const geometry = new PlaneGeometry(
-            this._chunkSize,
-            this._chunkSize,
-            this._chunkResolution,
-            this._chunkResolution,
-        );
-
-        geometry.rotateX(Math.PI * -0.5);
-
-        if (this._chunkResolution > 1) {
-            const vertices = geometry.getAttribute('position');
-
-            if (vertices) {
-                for (let c = 0; c < vertices.count; c++) {
-                    const xi = c * 3;
-                    const yi = xi + 1
-                    const zi = yi + 1;
-
-                    vertices.array[yi] = fractal2d(
-                        vertices.array[xi] + x,
-                        vertices.array[zi] + z, {
-                        octaves: this._octaves,
-                        frequency: this._frequency,
-                        persistence: this._persistence,
-                        amplitude: this._amplitude,
-                    });
-                }
-
-                geometry.attributes.position.needsUpdate = true;
-                geometry.computeVertexNormals();
-            }
+        this.noiseParams = noiseParams ?? {
+            octaves: 1,
+            frequency: 0,
+            persistence: 0,
+            amplitude: 0,
         }
 
-        return geometry;
+        this.generateStepAmount = Math.floor(this.chunkSize / 4); // TODO: why do we need this?
+
+        this.viewDistance = Math.floor(this.chunkSize * 2);
+
+        // this._viewDistanceMesh = new Mesh(
+        //     new CircleGeometry(this.viewDistance, 12, 0, Math.PI * 2),
+        //     new MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 }),
+        // );
+
+        // this._viewDistanceMesh.rotateX(Math.PI * -0.5);
+        // this.add(this._viewDistanceMesh);
+
+        this._generateChunksForPosition();
     }
 
-    private _generateChunksForPosition(position: Vector3) {
+    // private _createChunkGeometry(x: number, z: number): PlaneGeometry {
+    //     const geometry = new PlaneGeometry(
+    //         this.chunkSize,
+    //         this.chunkSize,
+    //         this.chunkResolution,
+    //         this.chunkResolution,
+    //     );
+
+    //     geometry.rotateX(Math.PI * -0.5);
+
+    //     if (this.chunkResolution > 1) {
+    //         const vertices = geometry.getAttribute('position');
+
+    //         if (vertices) {
+    //             for (let c = 0; c < vertices.count; c++) {
+    //                 const xi = c * 3;
+    //                 const yi = xi + 1
+    //                 const zi = yi + 1;
+
+    //                 vertices.array[yi] = noise(
+    //                     vertices.array[xi] + x,
+    //                     vertices.array[zi] + z, {
+    //                     octaves: this._noise.octaves,
+    //                     frequency: this._noise.frequency,
+    //                     persistence: this._noise.persistence,
+    //                     amplitude: this._noise.amplitude,
+    //                 });
+    //             }
+
+    //             geometry.attributes.position.needsUpdate = true;
+    //             geometry.computeVertexNormals();
+    //         }
+    //     }
+
+    //     return geometry;
+    // }
+
+    private _generateChunksForPosition(position?: Vector3) {
+        position = position ?? new Vector3();
 
         const distance = this.viewDistance;
 
@@ -102,26 +107,30 @@ export class World extends Group {
                 const distance = testPoint.distanceTo(position);
 
                 if (distance < this.viewDistance) {
-                    const cx = Math.floor(px / this._chunkSize);
-                    const cz = Math.floor(pz / this._chunkSize);
+                    const cx = Math.floor(px / this.chunkSize);
+                    const cz = Math.floor(pz / this.chunkSize);
                     const chunkName = `${cx},${cz}`;
 
                     if (!this._chunks.get(chunkName)) {
-                        const chunk = new Mesh(
-                            this._createChunkGeometry(cx, cz),
-                            this._material,
-                        );
-
-                        chunk.position.set(
-                            (cx * this._chunkSize) + (this._chunkSize / 2),
-                            0,
-                            (cz * this._chunkSize) + (this._chunkSize / 2)
+                        const chunk = new TerrainMesh(
+                            this.chunkSize,
+                            this.chunkResolution,
+                            this.material,
                         );
 
                         chunk.name = chunkName;
 
-                        this.add(chunk);
+                        chunk.position.set(
+                            (cx * this.chunkSize) + (this.chunkSize / 2),
+                            0,
+                            (cz * this.chunkSize) + (this.chunkSize / 2)
+                        );
 
+                        chunk.createGeometry((x: number, _y: number, z: number) =>
+                            noise(x + chunk.position.x, z + chunk.position.z, this.noiseParams)
+                        );
+
+                        this.add(chunk);
                         this._chunks.set(chunkName, chunk);
                     }
                 }
@@ -129,32 +138,22 @@ export class World extends Group {
         }
     }
 
-    update(_deltaTime: number, viewPosition: Vector3) {
-        this._viewDistanceMesh.position.set(...viewPosition.toArray());
+    public updateNoise(noiseParams: FractalNoiseParams) {
+        this.noiseParams = noiseParams;
+
+        this._chunks.forEach((chunk: TerrainMesh, pos: string) => {
+            log('updating chunk:', pos);
+
+            chunk.forEachVertex((x: number, _y: number, z: number) => noise(
+                chunk.position.x + x,
+                chunk.position.z + z,
+                this.noiseParams,
+            ));
+        });
+    }
+
+    public update(_deltaTime: number, viewPosition: Vector3 = this.position) {
+        // this._viewDistanceMesh.position.set(...viewPosition.toArray());
         this._generateChunksForPosition(viewPosition);
-    }
-
-    public get chunkSize(): number {
-        return this._chunkSize;
-    }
-
-    public get chunkResolution(): number {
-        return this._chunkResolution;
-    }
-
-    public get octaves(): number {
-        return this._octaves;
-    }
-
-    public get frequency(): number {
-        return this._frequency;
-    }
-
-    public get persistence(): number {
-        return this._persistence;
-    }
-
-    public get amplitude(): number {
-        return this._amplitude;
     }
 }

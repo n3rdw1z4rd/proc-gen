@@ -1,74 +1,61 @@
-import { MeshPhongMaterial, Object3D } from 'three';
-import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-import { rng } from '../utils/rng';
-import { World, WorldParams } from './world';
-import { ThreeJsPlayerController } from '../utils/threejs-player-controller';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { Emitter } from '../utils/emitter';
-import { Input } from '../utils/input';
+import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
+import { Intersection, Mesh, MeshLambertMaterial } from 'three';
+import { World } from './world';
+import { rng } from '../utils/rng';
+import { FractalNoiseParams } from '../utils/noise';
+import GUI from 'lil-gui';
+import { log } from '../utils/logger';
 
 rng.seed = 42;
 
 const emitter = Emitter.instance;
-const input = Input.instance;
 
 const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
 
-const worldParams: WorldParams = {
-    chunkSize: 64,
-    // chunkResolution: 2,
-    // viewDistance: 150,
-    material: new MeshPhongMaterial({ color: 0xff0000, wireframe: true }),
-    // octaves:  4,
-    // frequency:  0.5,
-    // persistence:  0.5,
-    // amplitude:  1.0,
+const material = new MeshLambertMaterial({
+    // color: 0x00aa00,
+    flatShading: true,
+    vertexColors: true,
+    // wireframe: true,
+});
+
+const noiseParams: FractalNoiseParams = {
+    octaves: 3,
+    frequency: 0.05,
+    persistence: 0.5,
+    amplitude: 4,
 };
 
-const world = new World(worldParams);
+const world = new World(4, 10, material, noiseParams);
 eng.scene.add(world);
 
-const player = new ThreeJsPlayerController(eng.camera);
-// player.position.set(50, 0, 50);
-// player.position.set(16.2, 0, 10);
-// player.position.set(world.chunkSize / 2, 0, world.chunkSize / 2);
-player.moveSpeed = world.chunkSize / 4;
-eng.scene.add(player);
-
-player.add(ThreeJsBoilerPlate.CreateCubeMesh());
-
-emitter.on('mouse_move', (ev: KeyValue) => {
-    if (input.isMouseButtonDown(0)) {
-        player.cameraRig.orbit(ev.deltaX, ev.deltaY);
-    }
-});
-
-emitter.on('mouse_wheel', (ev: KeyValue) => {
-    player.cameraRig.dolly(ev.deltaY);
-});
-
-let picked: Object3D | null = null;
+let picked: Intersection | null = null;
 
 emitter.on('mouse_button_clicked', (ev: KeyValue) => {
     if (ev.button === 0) {
-        picked = eng.pick()?.object ?? null;
+        picked = eng.pick();
+        if (picked) {
+            log('picked:', picked);
+
+            const faceIndex = Math.floor((picked.faceIndex ?? 0) / 2);
+            const obj = picked.object as Mesh;
+
+            // (obj.geometry as PlaneGeometry).
+
+            // var index = Math.floor(intersects[0].faceIndex / 2);
+            // cubeGeometry.faces[index].color.setHex(0xff000);
+        }
     }
 });
 
 eng.setupBasicScene({ gridHelper: false });
 
-const controls = new OrbitControls(eng.camera, eng.renderer.domElement);
-
 eng.clock.run((deltaTime: number) => {
     eng.resize();
-    controls.update(deltaTime);
 
-    player.velocity.x = (input.getKeyState('KeyD') - input.getKeyState('KeyA'))
-    player.velocity.z = (input.getKeyState('KeyS') - input.getKeyState('KeyW'));
-    player.update(deltaTime);
-
-    world.update(deltaTime, player.position);
+    world.update(deltaTime);
 
     eng.renderer.render(eng.scene, eng.camera);
 
@@ -77,7 +64,16 @@ eng.clock.run((deltaTime: number) => {
         chunkResolution: world.chunkResolution,
         viewDistance: world.viewDistance,
         stepAmount: world.generateStepAmount,
-        player: `${player.position.x.toFixed(2)}, ${player.position.z.toFixed(2)}`,
-        picked: picked?.name ?? null,
+        picked: picked?.object.name ?? null,
     });
 });
+
+const update = () => world.updateNoise(noiseParams);
+
+const gui = new GUI();
+// gui.add(terrainGeometry, 'size', 1, 10, 1);
+// gui.add(terrainGeometry, 'segments', 1, 10, 1);
+gui.add(noiseParams, 'octaves', 1, 10, 1).onChange(update);
+gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(update);
+gui.add(noiseParams, 'persistence', 0.0, 10.0, 0.01).onChange(update);
+gui.add(noiseParams, 'amplitude', 0.1, 10.0, 0.01).onChange(update);
