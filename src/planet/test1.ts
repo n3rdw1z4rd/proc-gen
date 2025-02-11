@@ -13,7 +13,7 @@ rng.seed = 42;
 const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
-    cameraDistance: 5,
+    cameraDistance: 20,
     gridHelper: false,
 });
 
@@ -37,6 +37,7 @@ geometry.rotateX(Math.PI * -0.5);
 ApplyNoise(geometry, noiseParams);
 
 const gui = new GUI();
+gui.add(material, 'wireframe');
 gui.add(noiseParams, 'octaves', 1, 8, 1).onChange(() => ApplyNoise(geometry, noiseParams));
 gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(() => ApplyNoise(geometry, noiseParams));
 gui.add(noiseParams, 'persistence', 0.1, 1.0, 0.1).onChange(() => ApplyNoise(geometry, noiseParams));
