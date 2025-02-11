@@ -1,12 +1,3 @@
-# wve
-Web Voxel Editor
+# proc-gen
 
-* ThreeJsBoilerPlate
-    * Clock
-    * Renderer
-    * Scene
-    * Camera
-
-* VoxelWorld
-
-* WorldChunk
+Just a sandbox for procedural generation stuff
