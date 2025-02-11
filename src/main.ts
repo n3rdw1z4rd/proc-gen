@@ -1,2 +1,3 @@
-import './terrain-fun';
+// import './terrain-fun';
 // import './voxels';
+import './planet';

@@ -59,3 +59,41 @@ export function createFractalNoise3D(): FractalNoiseFunction3D {
         return (height + 1) / 2;
     }
 };
+
+export interface NoiseParams {
+    x: number,
+    y?: number,
+    z: number,
+    octaves?: number,
+    frequency?: number,
+    persistence?: number,
+    amplitude?: number,
+}
+
+export type AnyNoiseFunction = SimplexNoise.NoiseFunction2D
+    | SimplexNoise.NoiseFunction3D
+    | FractalNoiseFunction2D
+    | FractalNoiseFunction3D;
+
+// export function noise(params: NoiseParams): number {
+//     let result: number = 0.0;
+
+//     if (
+//         params.octaves &&
+//         params.frequency &&
+//         params.persistence &&
+//         params.amplitude
+//     ) {
+//         if (!params.y)
+//             result = createFractalNoise2D();
+//         else
+//             result = createFractalNoise3D();
+//     } else {
+//         if (!params.y)
+//             result = createNoise2D();
+//         else
+//             result = createNoise3D();
+//     }
+
+//     return result;
+// }
