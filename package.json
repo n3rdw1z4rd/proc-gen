@@ -1,5 +1,5 @@
 {
-    "name": "wve",
+    "name": "proc-gen",
     "private": true,
     "version": "0.1.0",
     "type": "module",
@@ -15,7 +15,6 @@
     },
     "dependencies": {
         "lil-gui": "^0.20.0",
-        "simplex-noise": "^4.0.3",
         "three": "^0.173.0"
     }
 }
