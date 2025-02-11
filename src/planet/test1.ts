@@ -1,8 +1,12 @@
 import { Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
 import { rng } from '../utils/rng';
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-import { createFractalNoise2D, FractalNoiseParams } from '../utils/noise';
-import { AddNoise } from './geometry-noise';
+import { NoiseParams } from '../utils/noise';
+import { ApplyNoise } from './geometry-noise';
+import GUI from 'lil-gui';
+
+const SIZE = 20;
+const SEGMENTS = 100;
 
 rng.seed = 42;
 
@@ -10,10 +14,8 @@ const eng = new ThreeJsBoilerPlate();
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
     cameraDistance: 5,
-    // gridHelper: false,
+    gridHelper: false,
 });
-
-const noise = createFractalNoise2D();
 
 const material = new MeshLambertMaterial({
     color: 0x00ff00,
@@ -22,17 +24,23 @@ const material = new MeshLambertMaterial({
     wireframe: true,
 });
 
-const fractalParams: FractalNoiseParams = {
-    octaves: 3,
+const noiseParams: NoiseParams = {
+    octaves: 4,
     frequency: 0.05,
     persistence: 0.5,
     amplitude: 4,
 };
 
-const geometry = new PlaneGeometry(2, 2, 2, 2);
+const geometry = new PlaneGeometry(SIZE, SIZE, SEGMENTS, SEGMENTS);
 geometry.rotateX(Math.PI * -0.5);
 
-// AddNoise(geometry, {});
+ApplyNoise(geometry, noiseParams);
+
+const gui = new GUI();
+gui.add(noiseParams, 'octaves', 1, 8, 1).onChange(() => ApplyNoise(geometry, noiseParams));
+gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(() => ApplyNoise(geometry, noiseParams));
+gui.add(noiseParams, 'persistence', 0.1, 1.0, 0.1).onChange(() => ApplyNoise(geometry, noiseParams));
+gui.add(noiseParams, 'amplitude', 0.1, 8, 0.1).onChange(() => ApplyNoise(geometry, noiseParams));
 
 const mesh = new Mesh(geometry, material);
 eng.scene.add(mesh);

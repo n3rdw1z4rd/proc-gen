@@ -1,41 +1,24 @@
 import { BufferGeometry } from 'three';
-import { log } from '../utils/logger';
-import { createFractalNoise2D, createFractalNoise3D, createNoise2D, createNoise3D } from '../utils/noise';
-
-export interface AddNoiseParams {
-    x: number,
-    y?: number,
-    z: number,
-    octaves?: number,
-    frequency?: number,
-    persistence?: number,
-    amplitude?: number,
-}
+import { noise, NoiseParams } from '../utils/noise';
 
 // octaves: 3,
 // frequency: 0.05,
 // persistence: 0.5,
 // amplitude: 4,
 
-export function AddNoise(geometry: BufferGeometry, params: AddNoiseParams) {
-    log('AddNoise:', geometry, params);
+export function ApplyNoise(geometry: BufferGeometry, params: NoiseParams) {
+    const vertices = geometry.getAttribute('position');
 
-    let noiseFunc;
+    if (vertices) {
+        for (let c = 0; c < vertices.count; c++) {
+            const xi = c * 3;
+            const yi = xi + 1
+            const zi = yi + 1;
 
-    if (
-        params.octaves &&
-        params.frequency &&
-        params.persistence &&
-        params.amplitude
-    ) {
-        if (!params.y)
-            noiseFunc = createFractalNoise2D();
-        else
-            noiseFunc = createFractalNoise3D();
-    } else {
-        if (!params.y)
-            noiseFunc = createNoise2D();
-        else
-            noiseFunc = createNoise3D();
+            vertices.array[yi] = noise(vertices.array[xi], vertices.array[zi], params);
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
     }
 }

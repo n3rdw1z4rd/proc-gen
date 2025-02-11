@@ -3,9 +3,9 @@ import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { Intersection, Mesh, MeshLambertMaterial } from 'three';
 import { World } from './world';
 import { rng } from '../utils/rng';
-import { FractalNoiseParams } from '../utils/noise';
 import GUI from 'lil-gui';
 import { log } from '../utils/logger';
+import { NoiseParams } from '../utils/noise';
 
 rng.seed = 42;
 
@@ -21,7 +21,7 @@ const material = new MeshLambertMaterial({
     // wireframe: true,
 });
 
-const noiseParams: FractalNoiseParams = {
+const noiseParams: NoiseParams = {
     octaves: 3,
     frequency: 0.05,
     persistence: 0.5,

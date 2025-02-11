@@ -4,7 +4,7 @@ import { NewChunkFunction, VoxelWorld } from './voxel-world';
 import { log } from '../utils/logger';
 import { TextureAtlas } from '../utils/texture-atlas';
 import { VoxelMesh } from './voxel-mesh';
-import { fractal2d, FractalNoiseParams } from '../utils/noise';
+import { noise, NoiseParams } from '../utils/noise';
 
 log('voxels');
 
@@ -30,7 +30,7 @@ TextureAtlas.CreateFromUrl(
 
     // eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
-    const noiseParams: FractalNoiseParams = {
+    const noiseParams: NoiseParams = {
         octaves: 2,
         frequency: 0.2,
         persistence: 0.3,
@@ -44,7 +44,7 @@ TextureAtlas.CreateFromUrl(
         const wx = cx + vx;
         const wz = cz + vz;
 
-        const n = fractal2d(wx, wz, noiseParams);
+        const n = noise(wx, wz, noiseParams);
         const h = Math.floor(n * this.height);
 
         return vy < h ? FILL_VOXEL : 0;

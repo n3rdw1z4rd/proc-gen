@@ -1,15 +1,7 @@
 import { Group, Material, Vector3 } from 'three';
 import { TerrainMesh } from './terrain-mesh';
-import { createFractalNoise2D, FractalNoiseParams } from '../utils/noise';
 import { log } from '../utils/logger';
-
-const noise = createFractalNoise2D();
-log('noise:', noise(0, 0, {
-    octaves: 3,
-    frequency: 0.05,
-    persistence: 0.5,
-    amplitude: 4,
-}));
+import { noise, NoiseParams } from '../utils/noise';
 
 export class World extends Group {
     public readonly chunkSize: number;
@@ -17,7 +9,7 @@ export class World extends Group {
 
     public material: Material;
     public viewDistance: number;
-    public noiseParams: FractalNoiseParams;
+    public noiseParams: NoiseParams;
 
     public generateStepAmount: number;
 
@@ -28,7 +20,7 @@ export class World extends Group {
         chunkSize: number,
         chunkResolution: number,
         material: Material,
-        noiseParams?: FractalNoiseParams,
+        noiseParams?: NoiseParams,
     ) {
         super();
 
@@ -138,7 +130,7 @@ export class World extends Group {
         }
     }
 
-    public updateNoise(noiseParams: FractalNoiseParams) {
+    public updateNoise(noiseParams: NoiseParams) {
         this.noiseParams = noiseParams;
 
         this._chunks.forEach((chunk: TerrainMesh, pos: string) => {

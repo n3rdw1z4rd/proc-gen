@@ -2,8 +2,8 @@ import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { rng } from '../utils/rng';
 import { MeshLambertMaterial } from 'three';
 import { TerrainMesh } from './terrain-mesh';
-import { createFractalNoise2D, FractalNoiseParams } from '../utils/noise';
 import GUI from 'lil-gui';
+import { noise, NoiseParams } from '../utils/noise';
 
 rng.seed = 42;
 
@@ -25,8 +25,7 @@ const terrain = new TerrainMesh(20, 100, terrainMaterial);
 terrain.minColor = 0.1;
 eng.scene.add(terrain);
 
-const noise = createFractalNoise2D();
-const fractalParams: FractalNoiseParams = {
+const fractalParams: NoiseParams = {
     octaves: 3,
     frequency: 0.05,
     persistence: 0.5,

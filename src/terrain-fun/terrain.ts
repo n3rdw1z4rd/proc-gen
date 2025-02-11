@@ -1,5 +1,5 @@
 import { Material, Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
-import { fractal2d } from '../utils/noise';
+import { noise } from '../utils/noise';
 
 export interface TerrainChunkParams {
     octaves: number,
@@ -46,7 +46,7 @@ export class TerrainChunk extends Mesh {
                 const yi = xi + 1
                 const zi = yi + 1;
 
-                vertices.array[yi] = fractal2d(
+                vertices.array[yi] = noise(
                     vertices.array[xi],
                     vertices.array[zi], {
                     octaves: this._octaves,
