@@ -3,6 +3,7 @@ import { rng } from '../utils/rng';
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { FractalParams } from '../utils/perlin-noise';
 import { SphericalBoxGeometry } from './spherical-box-geometry';
+import GUI from 'lil-gui';
 
 rng.seed = 42;
 
@@ -32,10 +33,19 @@ const fractalParams: FractalParams = {
     lacunarity: 2.2,
 };
 
-// geometry.addFractalNoiseControls(fractalParams, material);
-
 eng.clock.run((_dt: number) => {
     eng.resize();
     eng.renderer.render(eng.scene, eng.camera);
     eng.clock.showStats();
 });
+
+// const updateGeometry = () => geometry.applyFractalNoise(fractalParams);
+// updateGeometry();
+
+// const gui = new GUI();
+// gui.add(fractalParams, 'octaves', 1, 8, 1).onChange(updateGeometry);
+// gui.add(fractalParams, 'frequency', 0.01, 1.0, 0.01).onChange(updateGeometry);
+// gui.add(fractalParams, 'persistence', 0.1, 1.0, 0.1).onChange(updateGeometry);
+// gui.add(fractalParams, 'amplitude', 0.1, 8, 0.1).onChange(updateGeometry);
+// gui.add(fractalParams, 'lacunarity', 0.1, 8, 0.1).onChange(updateGeometry);
+// gui.add(material, 'wireframe');
