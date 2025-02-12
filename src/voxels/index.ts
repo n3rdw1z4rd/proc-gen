@@ -4,7 +4,7 @@ import { NewChunkFunction, VoxelWorld } from './voxel-world';
 import { log } from '../utils/logger';
 import { TextureAtlas } from '../utils/texture-atlas';
 import { VoxelMesh } from './voxel-mesh';
-import { noise, NoiseParams } from '../utils/noise';
+import { noise, FractalParams } from '../utils/perlin-noise';
 
 log('voxels');
 
@@ -30,11 +30,12 @@ TextureAtlas.CreateFromUrl(
 
     // eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
-    const noiseParams: NoiseParams = {
+    const noiseParams: FractalParams = {
         octaves: 2,
         frequency: 0.2,
         persistence: 0.3,
         amplitude: 1,
+        lacunarity: 2.2,
     };
 
     const newChunkFunction: NewChunkFunction = function (this: VoxelMesh, pos: VEC3) {

@@ -1,1 +1,2 @@
-import './test1';
+// import './test1';
+import './text2';

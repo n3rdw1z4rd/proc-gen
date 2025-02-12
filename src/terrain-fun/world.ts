@@ -1,7 +1,7 @@
 import { Group, Material, Vector3 } from 'three';
 import { TerrainMesh } from './terrain-mesh';
 import { log } from '../utils/logger';
-import { noise, NoiseParams } from '../utils/noise';
+import { noise, FractalParams } from '../utils/perlin-noise';
 
 export class World extends Group {
     public readonly chunkSize: number;
@@ -9,7 +9,7 @@ export class World extends Group {
 
     public material: Material;
     public viewDistance: number;
-    public noiseParams: NoiseParams;
+    public noiseParams: FractalParams;
 
     public generateStepAmount: number;
 
@@ -20,7 +20,7 @@ export class World extends Group {
         chunkSize: number,
         chunkResolution: number,
         material: Material,
-        noiseParams?: NoiseParams,
+        noiseParams?: FractalParams,
     ) {
         super();
 
@@ -34,6 +34,7 @@ export class World extends Group {
             frequency: 0,
             persistence: 0,
             amplitude: 0,
+            lacunarity: 0,
         }
 
         this.generateStepAmount = Math.floor(this.chunkSize / 4); // TODO: why do we need this?
@@ -130,7 +131,7 @@ export class World extends Group {
         }
     }
 
-    public updateNoise(noiseParams: NoiseParams) {
+    public updateNoise(noiseParams: FractalParams) {
         this.noiseParams = noiseParams;
 
         this._chunks.forEach((chunk: TerrainMesh, pos: string) => {

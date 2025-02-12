@@ -16,12 +16,16 @@ export interface CommonEventProps {
 }
 
 export class Input {
+    private _parent: HTMLElement | Window = window;
+
     public inputThreshold: number = 200;
     private _keyStates: { [key: string]: InputState } = {};
     private _mouseButtonStates: { [key: number]: InputState } = {};
 
     private _mousePosition: VEC2 = [0, 0];
+    private _mousePosition2: VEC2 = [0, 0];
     public get mousePosition(): VEC2 { return this._mousePosition; }
+    public get mousePosition2(): VEC2 { return this._mousePosition2; }
 
     private static _instance: Input;
 
@@ -34,13 +38,32 @@ export class Input {
     }
 
     private constructor() {
-        window.addEventListener('contextmenu', this._onContextMenu.bind(this));
-        window.addEventListener('keydown', this._onKeyDown.bind(this));
-        window.addEventListener('keyup', this._onKeyUp.bind(this));
-        window.addEventListener('mousedown', this._onMouseButtonDown.bind(this));
-        window.addEventListener('mouseup', this._onMouseButtonUp.bind(this));
-        window.addEventListener('mousemove', this._onMouseMove.bind(this));
-        window.addEventListener('wheel', this._onWheel.bind(this));
+        this.setParent();
+    }
+
+    private _removeListeners() {
+        // this._parent.removeEventListener('contextmenu', this._onContextMenu.bind(this));
+        this._parent.removeEventListener('keydown', this._onKeyDown.bind(this) as EventListener);
+        this._parent.removeEventListener('keyup', this._onKeyUp.bind(this) as EventListener);
+        this._parent.removeEventListener('mousedown', this._onMouseButtonDown.bind(this) as EventListener);
+        this._parent.removeEventListener('mouseup', this._onMouseButtonUp.bind(this) as EventListener);
+        this._parent.removeEventListener('mousemove', this._onMouseMove.bind(this) as EventListener);
+        this._parent.removeEventListener('wheel', this._onWheel.bind(this) as EventListener);
+        // TODO: add gamepad states
+        // TODO: add touch states
+    }
+
+    public setParent(parent?: HTMLElement | Window) {
+        this._removeListeners();
+        this._parent = parent ?? this._parent;
+
+        // this._parent.addEventListener('contextmenu', this._onContextMenu.bind(this));
+        this._parent.addEventListener('keydown', this._onKeyDown.bind(this) as EventListener);
+        this._parent.addEventListener('keyup', this._onKeyUp.bind(this) as EventListener);
+        this._parent.addEventListener('mousedown', this._onMouseButtonDown.bind(this) as EventListener);
+        this._parent.addEventListener('mouseup', this._onMouseButtonUp.bind(this) as EventListener);
+        this._parent.addEventListener('mousemove', this._onMouseMove.bind(this) as EventListener);
+        this._parent.addEventListener('wheel', this._onWheel.bind(this) as EventListener);
         // TODO: add gamepad states
         // TODO: add touch states
     }
@@ -57,11 +80,11 @@ export class Input {
         return props;
     }
 
-    private _onContextMenu(ev: MouseEvent) {
-        ev.preventDefault();
-        emitter.emit('contextmenu');
-        return false;
-    }
+    // private _onContextMenu(ev: MouseEvent) {
+    //     ev.preventDefault();
+    //     emitter.emit('contextmenu');
+    //     return false;
+    // }
 
     private _onKeyDown(ev: KeyboardEvent) {
         const props = this._getCommonEventProps(ev);
@@ -119,6 +142,14 @@ export class Input {
         const { buttons, offsetX, offsetY, movementX, movementY } = ev;
 
         this._mousePosition = [offsetX, offsetY];
+
+        const width = this._parent instanceof Window ? this._parent.innerWidth : this._parent.clientWidth;
+        const height = this._parent instanceof Window ? this._parent.innerHeight : this._parent.clientHeight;
+
+        this._mousePosition2 = [
+            (ev.clientX / width) * 2 - 1,
+            -(ev.clientY / height) * 2 + 1,
+        ];
 
         emitter.emit('mouse_move', {
             ...props,

@@ -3,7 +3,7 @@ import { rng } from '../utils/rng';
 import { MeshLambertMaterial } from 'three';
 import { TerrainMesh } from './terrain-mesh';
 import GUI from 'lil-gui';
-import { noise, NoiseParams } from '../utils/noise';
+import { noise, FractalParams } from '../utils/perlin-noise';
 
 rng.seed = 42;
 
@@ -25,11 +25,12 @@ const terrain = new TerrainMesh(20, 100, terrainMaterial);
 terrain.minColor = 0.1;
 eng.scene.add(terrain);
 
-const fractalParams: NoiseParams = {
-    octaves: 3,
-    frequency: 0.05,
-    persistence: 0.5,
-    amplitude: 4,
+const fractalParams: FractalParams = {
+    octaves: 2,
+    frequency: 0.2,
+    persistence: 0.3,
+    amplitude: 1,
+    lacunarity: 2.2,
 };
 
 

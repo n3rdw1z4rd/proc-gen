@@ -5,7 +5,7 @@ import { World } from './world';
 import { rng } from '../utils/rng';
 import GUI from 'lil-gui';
 import { log } from '../utils/logger';
-import { NoiseParams } from '../utils/noise';
+import { FractalParams } from '../utils/perlin-noise';
 
 rng.seed = 42;
 
@@ -21,11 +21,12 @@ const material = new MeshLambertMaterial({
     // wireframe: true,
 });
 
-const noiseParams: NoiseParams = {
-    octaves: 3,
-    frequency: 0.05,
-    persistence: 0.5,
-    amplitude: 4,
+const noiseParams: FractalParams = {
+    octaves: 2,
+    frequency: 0.2,
+    persistence: 0.3,
+    amplitude: 1,
+    lacunarity: 2.2,
 };
 
 const world = new World(4, 10, material, noiseParams);

@@ -33,7 +33,15 @@ export class ThreeJsBoilerPlate {
     public scene: Scene;
     public cameraRig: ThreeJsCameraRig;
 
-    public raycaster: Raycaster | undefined;
+    private _raycaster: Raycaster | undefined;
+
+    public get raycaster(): Raycaster {
+        if (!this._raycaster) {
+            this._raycaster = new Raycaster();
+        }
+
+        return this._raycaster;
+    }
 
     public get canvas(): HTMLCanvasElement { return this.renderer.domElement; }
     public get camera(): PerspectiveCamera { return this.cameraRig.camera; }
@@ -44,6 +52,7 @@ export class ThreeJsBoilerPlate {
         this.clock = new Clock();
 
         this.renderer = new WebGLRenderer(params?.renderer);
+        input.setParent(this.renderer.domElement);
 
         this.scene = new Scene();
 
@@ -106,10 +115,6 @@ export class ThreeJsBoilerPlate {
     }
 
     public pick(): Intersection | null {
-        if (!this.raycaster) {
-            this.raycaster = new Raycaster();
-        }
-
         const pickX = (input.mousePosition[0] / this.renderer.domElement.width) * 2 - 1;
         const pickY = -(input.mousePosition[1] / this.renderer.domElement.height) * 2 + 1;
 

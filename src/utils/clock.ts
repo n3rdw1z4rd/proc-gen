@@ -33,6 +33,7 @@ export class Clock {
     private _deltaTimeSeconds: number = 0;
     private _avgDeltaTime: number = 0;
     private _frameCount: number = 0;
+    private _frameCountTotal: number = 0;
     private _frameTime: number = 0;
     private _fps: number = 0;
     private _isRunning: boolean = false;
@@ -42,6 +43,7 @@ export class Clock {
     private _startTime: number = 0;
 
     get fps(): number { return this._fps; }
+    get frames(): number { return this._frameCountTotal; }
     get deltaTimeSeconds(): number { return this._deltaTimeSeconds; }
     get deltaTimeMilliseconds(): number { return this._daltaTimeMilliseconds; }
     get avgDeltaTime(): number { return this._avgDeltaTime; }
@@ -76,11 +78,14 @@ export class Clock {
             this._frameCount = 0;
         }
 
+        this._frameCountTotal++;
+
         this._avgDeltaTime = (this._avgDeltaTime * this._frameCount + this._daltaTimeMilliseconds) / (this._frameCount + 1);
     }
 
     public run(callback: (deltaTime: number) => void) {
         if (!this._isRunning) {
+            this._frameCountTotal = 0;
             this._startTime = performance.now();
             this._isRunning = true;
             this._updateCallback = callback;

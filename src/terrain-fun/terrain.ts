@@ -1,5 +1,5 @@
 import { Material, Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
-import { noise } from '../utils/noise';
+import { noise } from '../utils/perlin-noise';
 
 export interface TerrainChunkParams {
     octaves: number,
@@ -21,6 +21,7 @@ export class TerrainChunk extends Mesh {
     private _frequency: number = 0.5;
     private _persistence: number = 0.5;
     private _amplitude: number = 1.0;
+    private _lacunarity: number = 2.0;
 
     constructor(
         public readonly size: number = 16,
@@ -53,6 +54,7 @@ export class TerrainChunk extends Mesh {
                     frequency: this._frequency,
                     persistence: this._persistence,
                     amplitude: this._amplitude,
+                    lacunarity: this._lacunarity,
                 });
             }
 
