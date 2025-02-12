@@ -7,7 +7,7 @@ rng.seed = 42;
 
 function applyNoise(
     geometry: BoxGeometry,
-    noiseParams: FractalParams,
+    fractalParams: FractalParams,
 ): void {
     const position = geometry.attributes.position;
     const vertex = new Vector3();
@@ -16,7 +16,7 @@ function applyNoise(
         vertex.fromBufferAttribute(position, i);
         // vertex.normalize();
 
-        const n = noise(vertex.x, vertex.y, vertex.z, noiseParams);
+        const n = noise(vertex.x, vertex.y, vertex.z, fractalParams);
 
         vertex.addScalar(n);
         position.setXYZ(i, vertex.x, vertex.y, vertex.z);
@@ -42,7 +42,7 @@ const material = new MeshLambertMaterial({
     // wireframe: true,
 });
 
-const noiseParams: FractalParams = {
+const fractalParams: FractalParams = {
     octaves: 1,
     frequency: 0.05,
     persistence: 0.5,
@@ -59,17 +59,17 @@ const mesh = new Mesh(geometry, material);
 eng.scene.add(mesh);
 
 const updateGeometry = () => {
-    applyNoise(geometry, noiseParams);
+    applyNoise(geometry, fractalParams);
 }
 
 updateGeometry();
 
 // const gui = new GUI();
 // gui.add(material, 'wireframe');
-// gui.add(noiseParams, 'octaves', 1, 8, 1).onChange(updateGeometry);
-// gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(updateGeometry);
-// gui.add(noiseParams, 'persistence', 0.1, 1.0, 0.1).onChange(updateGeometry);
-// gui.add(noiseParams, 'amplitude', 0.1, 8, 0.1).onChange(updateGeometry);
+// gui.add(fractalParams, 'octaves', 1, 8, 1).onChange(updateGeometry);
+// gui.add(fractalParams, 'frequency', 0.01, 1.0, 0.01).onChange(updateGeometry);
+// gui.add(fractalParams, 'persistence', 0.1, 1.0, 0.1).onChange(updateGeometry);
+// gui.add(fractalParams, 'amplitude', 0.1, 8, 0.1).onChange(updateGeometry);
 
 eng.clock.run((_dt: number) => {
     eng.resize();

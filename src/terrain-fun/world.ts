@@ -9,7 +9,7 @@ export class World extends Group {
 
     public material: Material;
     public viewDistance: number;
-    public noiseParams: FractalParams;
+    public fractalParams: FractalParams;
 
     public generateStepAmount: number;
 
@@ -20,7 +20,7 @@ export class World extends Group {
         chunkSize: number,
         chunkResolution: number,
         material: Material,
-        noiseParams?: FractalParams,
+        fractalParams?: FractalParams,
     ) {
         super();
 
@@ -29,7 +29,7 @@ export class World extends Group {
 
         this.material = material;
 
-        this.noiseParams = noiseParams ?? {
+        this.fractalParams = fractalParams ?? {
             octaves: 1,
             frequency: 0,
             persistence: 0,
@@ -120,7 +120,7 @@ export class World extends Group {
                         );
 
                         chunk.createGeometry((x: number, _y: number, z: number) =>
-                            noise(x + chunk.position.x, z + chunk.position.z, this.noiseParams)
+                            noise(x + chunk.position.x, z + chunk.position.z, this.fractalParams)
                         );
 
                         this.add(chunk);
@@ -131,8 +131,8 @@ export class World extends Group {
         }
     }
 
-    public updateNoise(noiseParams: FractalParams) {
-        this.noiseParams = noiseParams;
+    public updateNoise(fractalParams: FractalParams) {
+        this.fractalParams = fractalParams;
 
         this._chunks.forEach((chunk: TerrainMesh, pos: string) => {
             log('updating chunk:', pos);
@@ -140,7 +140,7 @@ export class World extends Group {
             chunk.forEachVertex((x: number, _y: number, z: number) => noise(
                 chunk.position.x + x,
                 chunk.position.z + z,
-                this.noiseParams,
+                this.fractalParams,
             ));
         });
     }

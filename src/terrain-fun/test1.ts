@@ -21,7 +21,7 @@ const material = new MeshLambertMaterial({
     // wireframe: true,
 });
 
-const noiseParams: FractalParams = {
+const fractalParams: FractalParams = {
     octaves: 2,
     frequency: 0.2,
     persistence: 0.3,
@@ -29,7 +29,7 @@ const noiseParams: FractalParams = {
     lacunarity: 2.2,
 };
 
-const world = new World(4, 10, material, noiseParams);
+const world = new World(4, 10, material, fractalParams);
 eng.scene.add(world);
 
 let picked: Intersection | null = null;
@@ -69,12 +69,12 @@ eng.clock.run((deltaTime: number) => {
     });
 });
 
-const update = () => world.updateNoise(noiseParams);
+const update = () => world.updateNoise(fractalParams);
 
 const gui = new GUI();
 // gui.add(terrainGeometry, 'size', 1, 10, 1);
 // gui.add(terrainGeometry, 'segments', 1, 10, 1);
-gui.add(noiseParams, 'octaves', 1, 10, 1).onChange(update);
-gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(update);
-gui.add(noiseParams, 'persistence', 0.0, 10.0, 0.01).onChange(update);
-gui.add(noiseParams, 'amplitude', 0.1, 10.0, 0.01).onChange(update);
+gui.add(fractalParams, 'octaves', 1, 10, 1).onChange(update);
+gui.add(fractalParams, 'frequency', 0.01, 1.0, 0.01).onChange(update);
+gui.add(fractalParams, 'persistence', 0.0, 10.0, 0.01).onChange(update);
+gui.add(fractalParams, 'amplitude', 0.1, 10.0, 0.01).onChange(update);

@@ -32,7 +32,7 @@ const fractalParams: FractalParams = {
     lacunarity: 2.2,
 };
 
-// geometry.addFractalNoiseControls(noiseParams, material);
+// geometry.addFractalNoiseControls(fractalParams, material);
 
 eng.clock.run((_dt: number) => {
     eng.resize();

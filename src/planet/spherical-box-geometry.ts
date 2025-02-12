@@ -119,19 +119,19 @@ export class SphericalBoxGeometry extends BufferGeometry {
         this.computeVertexNormals();
     }
 
-    addFractalNoiseControls(noiseParams: FractalParams, material?: MeshLambertMaterial) {
+    addFractalNoiseControls(fractalParams: FractalParams, material?: MeshLambertMaterial) {
         const gui = new GUI();
 
-        gui.add(noiseParams, 'octaves', 1, 8, 1).onChange(() => this.applyFractalNoise(noiseParams));
-        gui.add(noiseParams, 'frequency', 0.01, 1.0, 0.01).onChange(() => this.applyFractalNoise(noiseParams));
-        gui.add(noiseParams, 'persistence', 0.1, 1.0, 0.1).onChange(() => this.applyFractalNoise(noiseParams));
-        gui.add(noiseParams, 'amplitude', 0.1, 8, 0.1).onChange(() => this.applyFractalNoise(noiseParams));
-        gui.add(noiseParams, 'lacunarity', 0.1, 8, 0.1).onChange(() => this.applyFractalNoise(noiseParams));
+        gui.add(fractalParams, 'octaves', 1, 8, 1).onChange(() => this.applyFractalNoise(fractalParams));
+        gui.add(fractalParams, 'frequency', 0.01, 1.0, 0.01).onChange(() => this.applyFractalNoise(fractalParams));
+        gui.add(fractalParams, 'persistence', 0.1, 1.0, 0.1).onChange(() => this.applyFractalNoise(fractalParams));
+        gui.add(fractalParams, 'amplitude', 0.1, 8, 0.1).onChange(() => this.applyFractalNoise(fractalParams));
+        gui.add(fractalParams, 'lacunarity', 0.1, 8, 0.1).onChange(() => this.applyFractalNoise(fractalParams));
 
         if (material) {
             gui.add(material, 'wireframe');
         }
 
-        this.applyFractalNoise(noiseParams);
+        this.applyFractalNoise(fractalParams);
     }
 }

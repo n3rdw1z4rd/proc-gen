@@ -30,7 +30,7 @@ TextureAtlas.CreateFromUrl(
 
     // eng.scene.add(ThreeJsBoilerPlate.CreateCubeMesh());
 
-    const noiseParams: FractalParams = {
+    const fractalParams: FractalParams = {
         octaves: 2,
         frequency: 0.2,
         persistence: 0.3,
@@ -45,7 +45,7 @@ TextureAtlas.CreateFromUrl(
         const wx = cx + vx;
         const wz = cz + vz;
 
-        const n = noise(wx, wz, noiseParams);
+        const n = noise(wx, wz, fractalParams);
         const h = Math.floor(n * this.height);
 
         return vy < h ? FILL_VOXEL : 0;
