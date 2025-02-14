@@ -126,10 +126,9 @@ export class PerlinNoise {
         // Compute Fractal Brownian Motion (FBM) noise
         let amplitude = fractalParams.amplitude;
         let frequency = fractalParams.frequency;
-        let noiseValue = 0;
 
         for (let o = 0; o < fractalParams.octaves; o++) {
-            noiseValue += PerlinNoise.noise2D(
+            result += PerlinNoise.noise2D(
                 x * frequency,
                 y * frequency,
             ) * amplitude;
@@ -147,10 +146,9 @@ export class PerlinNoise {
         // Compute Fractal Brownian Motion (FBM) noise
         let amplitude = fractalParams.amplitude;
         let frequency = fractalParams.frequency;
-        let noiseValue = 0;
 
         for (let o = 0; o < fractalParams.octaves; o++) {
-            noiseValue += PerlinNoise.noise3D(
+            result += PerlinNoise.noise3D(
                 x * frequency,
                 y * frequency,
                 z * frequency,
