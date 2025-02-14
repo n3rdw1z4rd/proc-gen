@@ -1,13 +1,10 @@
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-import { rng } from '../utils/rng';
 import { MeshLambertMaterial } from 'three';
 import { TerrainMesh } from './terrain-mesh';
 import GUI from 'lil-gui';
 import { noise, FractalParams } from '../utils/perlin-noise';
 
-rng.seed = 42;
-
-const eng = new ThreeJsBoilerPlate();
+const eng = new ThreeJsBoilerPlate({ seed: 42 });
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
     cameraDistance: 5,

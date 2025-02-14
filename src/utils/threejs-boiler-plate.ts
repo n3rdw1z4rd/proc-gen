@@ -24,7 +24,8 @@ export interface ThreeJsBoilerPlateParams {
         aspect?: number,
         near?: number,
         far?: number,
-    }
+    },
+    seed?: number,
 }
 
 export class ThreeJsBoilerPlate {
@@ -49,6 +50,8 @@ export class ThreeJsBoilerPlate {
     public rng = rng;
 
     constructor(params?: ThreeJsBoilerPlateParams) {
+        rng.seed = params?.seed ?? rng.seed;
+
         this.clock = new Clock();
 
         this.renderer = new WebGLRenderer(params?.renderer);

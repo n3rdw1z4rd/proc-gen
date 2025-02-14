@@ -1,9 +1,6 @@
 import { BoxGeometry, Mesh, MeshLambertMaterial, Vector3 } from 'three';
-import { rng } from '../utils/rng';
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
 import { noise, FractalParams } from '../utils/perlin-noise';
-
-rng.seed = 42;
 
 function applyNoise(
     geometry: BoxGeometry,
@@ -26,7 +23,7 @@ function applyNoise(
     geometry.computeVertexNormals();
 }
 
-const eng = new ThreeJsBoilerPlate();
+const eng = new ThreeJsBoilerPlate({ seed: 42 });
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
     cameraDistance: 5,

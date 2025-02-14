@@ -7,11 +7,9 @@ import GUI from 'lil-gui';
 import { log } from '../utils/logger';
 import { FractalParams } from '../utils/perlin-noise';
 
-rng.seed = 42;
-
 const emitter = Emitter.instance;
 
-const eng = new ThreeJsBoilerPlate();
+const eng = new ThreeJsBoilerPlate({ seed: 42 });
 eng.appendTo(document.getElementById('ROOT')!);
 
 const material = new MeshLambertMaterial({

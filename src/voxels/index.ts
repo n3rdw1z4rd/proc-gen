@@ -1,5 +1,4 @@
 import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
-import { rng } from '../utils/rng';
 import { NewChunkFunction, VoxelWorld } from './voxel-world';
 import { log } from '../utils/logger';
 import { TextureAtlas } from '../utils/texture-atlas';
@@ -7,8 +6,6 @@ import { VoxelMesh } from './voxel-mesh';
 import { noise, FractalParams } from '../utils/perlin-noise';
 
 log('voxels');
-
-rng.seed = 42;
 
 // const URL = '/minecraft-atlas.png';
 const URL = '/flourish-cc-by-nc-sa.png';
@@ -21,7 +18,7 @@ TextureAtlas.CreateFromUrl(
     TEXTURE_WIDTH,
     // { wireframe: true },
 ).then((textureAtlas: TextureAtlas) => {
-    const eng = new ThreeJsBoilerPlate();
+    const eng = new ThreeJsBoilerPlate({ seed: 42 });
     eng.appendTo(document.getElementById('ROOT')!);
     eng.setupBasicScene({
         cameraDistance: 5,

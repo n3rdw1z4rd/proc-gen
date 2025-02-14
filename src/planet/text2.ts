@@ -5,9 +5,7 @@ import { FractalParams } from '../utils/perlin-noise';
 import { SphericalBoxGeometry } from './spherical-box-geometry';
 import GUI from 'lil-gui';
 
-rng.seed = 42;
-
-const eng = new ThreeJsBoilerPlate();
+const eng = new ThreeJsBoilerPlate({ seed: 42 });
 eng.appendTo(document.getElementById('ROOT')!);
 eng.setupBasicScene({
     cameraDistance: 5,
@@ -21,16 +19,21 @@ const material = new MeshLambertMaterial({
     wireframe: true,
 });
 
-const geometry = new SphericalBoxGeometry(2, 8);
+const geometry = new SphericalBoxGeometry(2, 4);
 const mesh = new Mesh(geometry, material);
 eng.scene.add(mesh);
 
 const fractalParams: FractalParams = {
-    octaves: 5,
-    frequency: 1.0,
-    persistence: 0.5,
-    amplitude: 0.3,
-    lacunarity: 2.2,
+    // octaves: 5,
+    // frequency: 1.0,
+    // persistence: 0.5,
+    // amplitude: 0.3,
+    // lacunarity: 2.2,
+    octaves: 1,
+    frequency: 0.1,
+    persistence: 0.1,
+    amplitude: 0.1,
+    lacunarity: 1.0,
 };
 
 eng.clock.run((_dt: number) => {
@@ -39,7 +42,7 @@ eng.clock.run((_dt: number) => {
     eng.clock.showStats();
 });
 
-// const updateGeometry = () => geometry.applyFractalNoise(fractalParams);
+const updateGeometry = () => geometry.applyFractalNoise(fractalParams);
 // updateGeometry();
 
 // const gui = new GUI();
