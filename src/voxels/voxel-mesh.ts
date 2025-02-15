@@ -1,6 +1,6 @@
 import { BufferAttribute, Mesh } from 'three';
 import { xyz2i } from './utils';
-import { TextureAtlas } from '../utils/texture-atlas';
+import { TextureAtlas } from '../utils/threejs/texture-atlas';
 
 export interface VoxelMeshParams {
     size?: number,

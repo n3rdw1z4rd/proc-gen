@@ -1,7 +1,7 @@
 import { Group } from 'three';
 import { VoxelMesh } from './voxel-mesh';
 import { xyz2i } from './utils';
-import { TextureAtlas } from '../utils/texture-atlas';
+import { TextureAtlas } from '../utils/threejs/texture-atlas';
 
 export type NewChunkFunction = (position: VEC3) => number;
 

@@ -1,5 +1,5 @@
 import { Material, Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
-import { noise } from '../utils/perlin-noise';
+import { Noise } from '../utils/noise';
 
 export interface TerrainChunkParams {
     octaves: number,
@@ -47,15 +47,15 @@ export class TerrainChunk extends Mesh {
                 const yi = xi + 1
                 const zi = yi + 1;
 
-                vertices.array[yi] = noise(
-                    vertices.array[xi],
-                    vertices.array[zi], {
-                    octaves: this._octaves,
-                    frequency: this._frequency,
-                    persistence: this._persistence,
-                    amplitude: this._amplitude,
-                    lacunarity: this._lacunarity,
-                });
+                // vertices.array[yi] = noise(
+                //     vertices.array[xi],
+                //     vertices.array[zi], {
+                //     octaves: this._octaves,
+                //     frequency: this._frequency,
+                //     persistence: this._persistence,
+                //     amplitude: this._amplitude,
+                //     lacunarity: this._lacunarity,
+                // });
             }
 
             this.geometry.attributes.position.needsUpdate = true;
