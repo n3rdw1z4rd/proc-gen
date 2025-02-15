@@ -1,4 +1,4 @@
-import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
+import { ThreeJsBoilerPlate } from '../utils/threejs/threejs-boiler-plate';
 import { MeshLambertMaterial } from 'three';
 import { TerrainMesh } from './terrain-mesh';
 import GUI from 'lil-gui';
@@ -35,7 +35,7 @@ eng.clock.run((_dt: number) => {
     eng.clock.showStats();
 });
 
-const update = (_v?: number) => terrain.createGeometry((x: number, _y: number, z: number) => noise(x, z, noiseParams));
+// const update = (_v?: number) => terrain.createGeometry((x: number, _y: number, z: number) => noise(x, z, noiseParams));
 
 // update();
 

@@ -1,5 +1,5 @@
 import { Mesh, MeshLambertMaterial } from 'three';
-import { ThreeJsBoilerPlate } from '../utils/threejs-boiler-plate';
+import { ThreeJsBoilerPlate } from '../utils/threejs/threejs-boiler-plate';
 import { CubeSphereGeometry } from '../utils/threejs/cube-sphere-geometry';
 import GUI from 'lil-gui';
 

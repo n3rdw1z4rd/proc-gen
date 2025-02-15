@@ -1,8 +1,8 @@
 import { AmbientLight, BoxGeometry, ColorRepresentation, DirectionalLight, GridHelper, Intersection, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneGeometry, Raycaster, Scene, Vector2, WebGLRenderer, WebGLRendererParameters } from 'three';
-import { Clock } from './clock';
-import { Emitter } from './emitter';
-import { Input } from './input';
-import { rng } from './rng';
+import { Clock } from '../clock';
+import { Emitter } from '../emitter';
+import { Input } from '../input';
+import { rng } from '../rng';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
 import './main.css';
 
