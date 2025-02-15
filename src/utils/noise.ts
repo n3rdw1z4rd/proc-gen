@@ -37,6 +37,53 @@ export class Noise {
 
         return Noise._n4d(x, y, z, w);
     }
+
+    public static fractal2d(x: number, y: number, fractalParams: FractalParams): number {
+        const octaves = fractalParams.octaves;
+        const lacunarity = fractalParams.lacunarity;
+        const gain = 0.5;
+
+        let amplitude = fractalParams.amplitude;
+        let frequency = fractalParams.frequency;
+
+        let value = 0;
+
+        for (let i = 0; i < octaves; i++) {
+            value += amplitude * Noise.noise2d(
+                frequency * x,
+                frequency * y,
+            );
+
+            frequency *= lacunarity;
+            amplitude *= gain;
+        }
+
+        return value;
+    }
+
+    public static fractal3d(x: number, y: number, z: number, fractalParams: FractalParams): number {
+        const octaves = fractalParams.octaves;
+        const lacunarity = fractalParams.lacunarity;
+        const gain = 0.5;
+
+        let amplitude = fractalParams.amplitude;
+        let frequency = fractalParams.frequency;
+
+        let value = 0;
+
+        for (let i = 0; i < octaves; i++) {
+            value += amplitude * Noise.noise3d(
+                frequency * x,
+                frequency * y,
+                frequency * z,
+            );
+
+            frequency *= lacunarity;
+            amplitude *= gain;
+        }
+
+        return value;
+    }
 }
 
 // export function noise(x: number, y: number, z?: number | FractalParams, params?: FractalParams): number {

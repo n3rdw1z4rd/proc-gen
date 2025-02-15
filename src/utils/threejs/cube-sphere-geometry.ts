@@ -8,10 +8,10 @@ export class CubeSphereGeometry extends BoxGeometry {
         public readonly size: number,
         public readonly segments: number,
     ) {
-        super(
-            size, size, size,
-            segments, segments, segments,
-        );
+        size = Math.floor(size);
+        segments = Math.floor(segments);
+
+        super(size, size, size, segments, segments, segments);
 
         this._halfSize = (this.size / 2);
 

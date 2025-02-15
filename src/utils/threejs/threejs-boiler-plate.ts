@@ -4,7 +4,7 @@ import { Emitter } from '../emitter';
 import { Input } from '../input';
 import { rng } from '../rng';
 import { ThreeJsCameraRig } from './threejs-camera-rig';
-import './main.css';
+import '../main.css';
 
 const emitter = Emitter.instance;
 const input = Input.instance;
