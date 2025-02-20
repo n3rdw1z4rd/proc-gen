@@ -1,4 +1,4 @@
-import { CreateWebGlContext, GL, ProgramInfo } from './webgl';
+import { CreateWebGlContext, ProgramInfo } from './webgl';
 
 export interface RendererParams {
     canvas?: HTMLCanvasElement,
@@ -6,7 +6,7 @@ export interface RendererParams {
 }
 
 export class Renderer {
-    public gl: GL;
+    public gl: WebGL2RenderingContext;
 
     public programInfo: ProgramInfo | undefined;
 
