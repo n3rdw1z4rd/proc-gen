@@ -4,6 +4,7 @@ export class Rng {
 
     constructor() {
         this._uid_characters = this.shuffle(this._uid_characters) as string;
+        this.seed = this.nexti;
     }
 
     public get seed(): number {
