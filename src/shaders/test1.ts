@@ -8,7 +8,7 @@ import { clamp } from '../utils/math';
 // import { Input } from '../utils/input';
 
 const gl = CreateWebGlContext();
-document.getElementById('ROOT')!.appendChild(gl.canvas as HTMLCanvasElement);
+document.getElementById('root')!.appendChild(gl.canvas as HTMLCanvasElement);
 ResizeWebGlContext(gl);
 
 gl.enable(gl.DEPTH_TEST);

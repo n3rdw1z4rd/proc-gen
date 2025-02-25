@@ -19,7 +19,7 @@ TextureAtlas.CreateFromUrl(
     // { wireframe: true },
 ).then((textureAtlas: TextureAtlas) => {
     const eng = new ThreeJsBoilerPlate({ seed: 42 });
-    eng.appendTo(document.getElementById('ROOT')!);
+    eng.appendTo(document.getElementById('root')!);
     eng.setupBasicScene({
         cameraDistance: 5,
         gridHelper: false,

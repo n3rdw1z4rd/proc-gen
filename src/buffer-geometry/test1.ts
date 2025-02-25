@@ -5,7 +5,7 @@ import GUI from 'lil-gui';
 
 const eng = new ThreeJsBoilerPlate({ seed: 42 });
 
-eng.appendTo(document.getElementById('ROOT')!);
+eng.appendTo(document.getElementById('root')!);
 eng.setupBasicScene({ gridHelper: false });
 
 const material = new MeshLambertMaterial({
