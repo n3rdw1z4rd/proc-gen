@@ -1,5 +1,4 @@
 import { Material, Mesh, MeshLambertMaterial, PlaneGeometry } from 'three';
-import { Noise } from '../utils/noise';
 
 export interface TerrainChunkParams {
     octaves: number,

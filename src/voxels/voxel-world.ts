@@ -1,9 +1,10 @@
 import { Group } from 'three';
 import { VoxelMesh } from './voxel-mesh';
 import { xyz2i } from './utils';
-import { TextureAtlas } from '../utils/threejs/texture-atlas';
+import { vec2, vec3 } from 'gl-matrix';
+import { TextureAtlas } from '@n3rdw1z4rd/core';
 
-export type NewChunkFunction = (position: VEC3) => number;
+export type NewChunkFunction = (position: vec3) => number;
 
 export interface VoxelWorldParams {
     chunkSize?: number,
@@ -53,7 +54,7 @@ export class VoxelWorld extends Group {
 
     // }
 
-    public updateChunk(pos: VEC2) {
+    public updateChunk(pos: vec2) {
         const [px, pz] = pos;
         const chunk = this._chunks.get(xyz2i([px, 0, pz]));
         chunk?.updateGeometry();
@@ -63,7 +64,7 @@ export class VoxelWorld extends Group {
         this._chunks.forEach((chunk: VoxelMesh) => chunk.updateGeometry());
     }
 
-    public update(position: VEC3 = [0, 0, 0]) {
+    public update(position: vec3 = [0, 0, 0]) {
         const [px, _py, pz] = position;
 
         const x = ((px / this.chunkSize) | 0);
@@ -85,7 +86,7 @@ export class VoxelWorld extends Group {
 
                     chunk.position.set(cx, 0, cz);
 
-                    chunk.forEachVoxel((pos: VEC3) => {
+                    chunk.forEachVoxel((pos: vec3) => {
                         return this.newChunkFunction
                             ? this.newChunkFunction.bind(chunk)(pos)
                             : 1;

@@ -1,11 +1,7 @@
 import { NewChunkFunction, VoxelWorld } from './voxel-world';
-import { ThreeJsBoilerPlate } from '../utils/threejs/threejs-boiler-plate';
-import { TextureAtlas } from '../utils/threejs/texture-atlas';
 import { VoxelMesh } from './voxel-mesh';
-import { Noise, FractalParams } from '../utils/noise';
-import { log } from '../utils/logger';
-
-log('voxels');
+import { FractalParams, Noise, TextureAtlas, ThreeJsBoilerPlate } from '@n3rdw1z4rd/core';
+import { vec3 } from 'gl-matrix';
 
 // const URL = '/minecraft-atlas.png';
 const URL = '/flourish-cc-by-nc-sa.png';
@@ -35,7 +31,7 @@ TextureAtlas.CreateFromUrl(
         lacunarity: 2.2,
     };
 
-    const newChunkFunction: NewChunkFunction = function (this: VoxelMesh, pos: VEC3) {
+    const newChunkFunction: NewChunkFunction = function (this: VoxelMesh, pos: vec3) {
         const [cx, _cy, cz] = this.position.floor().toArray();
         const [vx, vy, vz] = pos;
 

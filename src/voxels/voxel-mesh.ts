@@ -1,6 +1,7 @@
 import { BufferAttribute, Mesh } from 'three';
 import { xyz2i } from './utils';
-import { TextureAtlas } from '../utils/threejs/texture-atlas';
+import { TextureAtlas } from '@n3rdw1z4rd/core';
+import { vec3 } from 'gl-matrix';
 
 export interface VoxelMeshParams {
     size?: number,
@@ -25,17 +26,17 @@ export class VoxelMesh extends Mesh {
         this._voxels = new Map<string, number>();
     }
 
-    public get(position: VEC3): number {
+    public get(position: vec3): number {
         const voxel = this._voxels.get(xyz2i(position));
         return voxel ?? 0;
     }
 
-    public set(position: VEC3, value: number, updateGeometry: boolean = true) {
+    public set(position: vec3, value: number, updateGeometry: boolean = true) {
         this._voxels.set(xyz2i(position), value);
         if (updateGeometry === true) this.updateGeometry();
     }
 
-    public forEachVoxel(callback: (position: VEC3) => number, updateGeometry: boolean = true) {
+    public forEachVoxel(callback: (position: vec3) => number, updateGeometry: boolean = true) {
         for (let x = 0; x < this.size; ++x) {
             for (let y = 0; y < this.height; ++y) {
                 for (let z = 0; z < this.size; ++z) {

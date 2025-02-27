@@ -1,5 +1,5 @@
+import { TextureAtlas } from '@n3rdw1z4rd/core';
 import { BufferGeometry, Float32BufferAttribute, Material, Mesh } from 'three';
-import { clamp } from '../utils/math';
 
 export class TerrainMesh extends Mesh {
     public readonly size: number;
@@ -22,14 +22,20 @@ export class TerrainMesh extends Mesh {
     }
 
     public createGeometry(
-        heightFunc?: (x: number, y: number, z: number) => number
+        heightFunc?: (x: number, y: number, z: number) => number,
+        textureIndices?: (xSeg: number, zSeg: number) => number,
     ) {
         // CREDIT: https://github.com/mrdoob/three.js/blob/master/examples/webgl_buffergeometry_indexed.html
+
+        if (!(this.material instanceof TextureAtlas)) {
+            console.warn("TerrainMesh requires a TextureAtlas material to map textures.");
+            return;
+        }
 
         const indices = [];
         const vertices = [];
         const normals = [];
-        // const uvs = []; // TODO: implement textures, and TextureAtlas
+        const uvs = [];
         const colors = [];
 
         const halfSize = this.size / 2;
@@ -40,12 +46,17 @@ export class TerrainMesh extends Mesh {
                 const x = (xSeg * segmentSize) - halfSize;
                 const z = (zSeg * segmentSize) - halfSize;
                 const y = heightFunc ? heightFunc(x, 0, z) : 0;
-                const c = clamp(y, this.minColor, 1.0);
+                const c = 1.0;//clamp(y, this.minColor, 1.0);
 
                 vertices.push(x, y, z);
                 normals.push(0, 1, 0);
-                // uvs.push(uvx, uvy); // TODO: implement textures, and TextureAtlas
                 colors.push(c, c, c);
+
+                if (textureIndices) {
+                }
+                const textureIndex = textureIndices ? textureIndices(xSeg, zSeg) : 0;
+                const [u, v] = this.material.getUv(textureIndex, xSeg % 2, zSeg % 2);
+                uvs.push(u, v);
             }
         }
 
@@ -65,8 +76,11 @@ export class TerrainMesh extends Mesh {
         geometry.setIndex(indices);
         geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
         geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
-        // geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2)); // TODO: implement textures, and TextureAtlas
         geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+
+        if (textureIndices) {
+        }
+        geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
 
         this.geometry = geometry;
     }

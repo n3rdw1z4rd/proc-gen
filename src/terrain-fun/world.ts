@@ -1,7 +1,6 @@
 import { Group, Material, Vector3 } from 'three';
 import { TerrainMesh } from './terrain-mesh';
-import { log } from '../utils/logger';
-import { Noise, FractalParams } from '../utils/noise';
+import { FractalParams, log, Noise, rng } from '@n3rdw1z4rd/core';
 
 export class World extends Group {
     public readonly chunkSize: number;
@@ -119,8 +118,15 @@ export class World extends Group {
                             (cz * this.chunkSize) + (this.chunkSize / 2)
                         );
 
-                        chunk.createGeometry((x: number, _y: number, z: number) =>
-                            Noise.fractal2d(x + chunk.position.x, z + chunk.position.z, this.fractalParams)
+                        chunk.createGeometry(
+                            (x: number, _y: number, z: number) => 0,
+                            // Noise.fractal2d(x + chunk.position.x, z + chunk.position.z, this.fractalParams),
+                            // (x: number, _y: number, z: number) =>
+                            //     Noise.fractal2d(x + chunk.position.x, z + chunk.position.z, this.fractalParams) * 0.1,
+                            (xSeg: number, zSeg: number) => {
+                                log({ xSeg, zSeg });
+                                return rng.nextf < 0.5 ? 0 : 1;//rng.range(10);
+                            },
                         );
 
                         this.add(chunk);
