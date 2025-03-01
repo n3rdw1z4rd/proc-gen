@@ -1,6 +1,6 @@
 import { Mesh, MeshLambertMaterial } from 'three';
 import GUI from 'lil-gui';
-import { CubeSphereGeometry, ThreeJsBoilerPlate } from '@n3rdw1z4rd/core';
+import { CubeSphereGeometry, ThreeJsBoilerPlate } from '../core';
 
 const eng = new ThreeJsBoilerPlate({ seed: 42 });
 

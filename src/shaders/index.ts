@@ -1,6 +1,6 @@
 import VertShader from './vertex.glsl?raw';
 import FragShader from './fragment.glsl?raw';
-import { clamp, Clock, CreateProgramInfo, CreateWebGlContext, Input, KeyValue, ResizeWebGlContext } from '@n3rdw1z4rd/core';
+import { clamp, Clock, CreateProgramInfo, CreateWebGlContext, Input, KeyValue, ResizeWebGlContext } from '../core';
 
 const gl = CreateWebGlContext();
 document.getElementById('root')!.appendChild(gl.canvas as HTMLCanvasElement);

@@ -1,4 +1,4 @@
-import { TextureAtlas } from '@n3rdw1z4rd/core';
+import { TextureAtlas } from '../core';
 import { BufferGeometry, Float32BufferAttribute, Material, Mesh } from 'three';
 
 export class TerrainMesh extends Mesh {

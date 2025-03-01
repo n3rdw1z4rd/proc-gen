@@ -1,6 +1,6 @@
 import { Group, Material, Vector3 } from 'three';
 import { TerrainMesh } from './terrain-mesh';
-import { FractalParams, log, Noise, rng } from '@n3rdw1z4rd/core';
+import { FractalParams, log, Noise, rng } from '../core';
 
 export class World extends Group {
     public readonly chunkSize: number;

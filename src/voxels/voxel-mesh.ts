@@ -1,17 +1,19 @@
 import { BufferAttribute, Mesh } from 'three';
 import { xyz2i } from './utils';
-import { TextureAtlas } from '@n3rdw1z4rd/core';
+import { TextureAtlas } from '../core';
 import { vec3 } from 'gl-matrix';
 
 export interface VoxelMeshParams {
     size?: number,
     height?: number,
     material: TextureAtlas,
+    inverted?: boolean,
 }
 
 export class VoxelMesh extends Mesh {
     public readonly size: number;
     public readonly height: number;
+    public readonly inverted: boolean;
 
     private _voxels: Map<string, number>;
 
@@ -20,6 +22,7 @@ export class VoxelMesh extends Mesh {
 
         this.size = Math.floor(params.size ?? 16);
         this.height = Math.floor(params.height ?? this.size);
+        this.inverted = (params.inverted === true);
 
         this.material = params.material;
 
@@ -31,7 +34,7 @@ export class VoxelMesh extends Mesh {
         return voxel ?? 0;
     }
 
-    public set(position: vec3, value: number, updateGeometry: boolean = true) {
+    public set(position: vec3, value: number, updateGeometry: boolean = false) {
         this._voxels.set(xyz2i(position), value);
         if (updateGeometry === true) this.updateGeometry();
     }
@@ -62,27 +65,42 @@ export class VoxelMesh extends Mesh {
                     const voxel = this.get([x, y, z]);
 
                     if (voxel) {
-                        VoxelFaces.forEach((faces: Array<number[]>) => {
-                            const [dx, dy, dz] = faces[0];
-                            const neighborVoxel = this.get([x + dx, y + dy, z + dz]);
+                        VoxelFaces.forEach((faces: Array<number[]>, i: number) => {
+                            if (!this.inverted || (this.inverted && i !== 3)) {
+                                const [dx, dy, dz] = faces[0];
+                                const neighborVoxel = this.get([x + dx, y + dy, z + dz]);
 
-                            if (!neighborVoxel) {
-                                const positionIndex = positions.length / 3;
+                                if (!neighborVoxel) {
+                                    const positionIndex = positions.length / 3;
 
-                                faces.forEach((faceVerts: number[]) => {
-                                    const [nx, ny, nz, px, py, pz, ux, uy] = faceVerts;
+                                    faces.forEach((faceVerts: number[]) => {
+                                        const [nx, ny, nz, px, py, pz, ux, uy] = faceVerts;
 
-                                    positions.push(x + px, y + py, z + pz);
-                                    normals.push(nx, ny, nz);
-                                    uvs.push(...(this.material as TextureAtlas).getUv(voxel - 1, ux, uy));
-                                });
+                                        positions.push(x + px, y + py, z + pz);
 
-                                indices.push(
-                                    positionIndex, positionIndex + 1, positionIndex + 2,
-                                    positionIndex + 2, positionIndex + 1, positionIndex + 3,
-                                );
+                                        if (!this.inverted) {
+                                            normals.push(nx, ny, nz);
+                                        } else {
+                                            normals.push(-nx, -ny, -nz);
+                                        }
 
-                                needsUpdate = true;
+                                        uvs.push(...(this.material as TextureAtlas).getUv(voxel - 1, ux, uy));
+                                    });
+
+                                    if (!this.inverted) {
+                                        indices.push(
+                                            positionIndex, positionIndex + 1, positionIndex + 2,
+                                            positionIndex + 2, positionIndex + 1, positionIndex + 3,
+                                        );
+                                    } else {
+                                        indices.push(
+                                            positionIndex, positionIndex + 2, positionIndex + 1,
+                                            positionIndex + 2, positionIndex + 3, positionIndex + 1,
+                                        );
+                                    }
+
+                                    needsUpdate = true;
+                                }
                             }
                         });
 

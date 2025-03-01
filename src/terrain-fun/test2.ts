@@ -1,7 +1,7 @@
 import { MeshLambertMaterial } from 'three';
 import { TerrainMesh } from './terrain-mesh';
 import GUI from 'lil-gui';
-import { ThreeJsBoilerPlate } from '@n3rdw1z4rd/core';
+import { ThreeJsBoilerPlate } from '../core';
 
 const eng = new ThreeJsBoilerPlate({ seed: 42 });
 eng.appendTo(document.getElementById('root')!);

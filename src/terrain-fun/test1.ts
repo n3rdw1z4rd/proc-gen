@@ -1,6 +1,6 @@
 import { Intersection, Mesh, MeshLambertMaterial } from 'three';
 import { World } from './world';
-import { FractalParams, TextureAtlas, ThreeJsBoilerPlate } from '@n3rdw1z4rd/core';
+import { FractalParams, TextureAtlas, ThreeJsBoilerPlate } from '../core';
 import GUI from 'lil-gui';
 
 // const URL = '/minecraft-atlas.png';

@@ -2,7 +2,7 @@ import { Group } from 'three';
 import { VoxelMesh } from './voxel-mesh';
 import { xyz2i } from './utils';
 import { vec2, vec3 } from 'gl-matrix';
-import { TextureAtlas } from '@n3rdw1z4rd/core';
+import { TextureAtlas } from '../core';
 
 export type NewChunkFunction = (position: vec3) => number;
 
