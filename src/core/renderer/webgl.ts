@@ -1,5 +1,3 @@
-import { KeyValue } from '../types';
-
 export enum ShaderType {
     VERTEX = WebGL2RenderingContext.VERTEX_SHADER,
     FRAGMENT = WebGL2RenderingContext.FRAGMENT_SHADER,
