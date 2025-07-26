@@ -84,7 +84,7 @@ export class VoxelMesh extends Mesh {
                                             normals.push(-nx, -ny, -nz);
                                         }
 
-                                        uvs.push(...(this.material as TextureAtlas).getUv(voxel - 1, ux, uy));
+                                        uvs.push(...(this.material as TextureAtlas).getUv(voxel, ux, uy));
                                     });
 
                                     if (!this.inverted) {

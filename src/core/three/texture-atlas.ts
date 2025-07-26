@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix';
 import { TextureLoader, Texture, MeshLambertMaterial, MeshLambertMaterialParameters, NearestFilter } from 'three';
+import { log } from '../logger';
 
 export interface TextureData {
     width: number,
@@ -25,6 +26,7 @@ export function LoadTexture(url: string): Promise<TextureData> {
 export class TextureAtlas extends MeshLambertMaterial {
     private _uw: number;
     private _uh: number;
+    private _textureCount: number;
 
     constructor(
         public readonly textureData: TextureData,
@@ -42,15 +44,34 @@ export class TextureAtlas extends MeshLambertMaterial {
         this._uw = this.textureWidth / this.textureData.width;
         this._uh = this.textureHeight / this.textureData.height;
 
+        this._textureCount = this.textureData.width / this.textureWidth;
+
         this.textureData.texture.magFilter = NearestFilter;
     }
 
     getUv(voxel: number, ux: number, uy: number): vec2 {
-        return vec2.fromValues(
-            (voxel + ux) * this._uw,
-            1 - (1 - uy) * this._uh,
-        );
+        const vux = voxel % this._textureCount;
+        const vuy = Math.floor(voxel / this._textureCount);
+
+        const uvx = (vux + ux) * this._uw;
+        const uvy = 1 - (vuy + uy) * this._uh;
+
+        if (voxel === 0) log({ uvx, uvy });
+
+        return vec2.fromValues(uvx, uvy);
     }
+
+    // getUv(voxel: number, ux: number, uy: number): vec2 {
+    //     const vux = (voxel % this._textureCount) * this._uw;
+    //     const vuy = Math.floor(voxel / this._textureCount) * this._uh;
+
+    //     const uvx = vux + (this._uw * ux);
+    //     const uvy = vuy + (this._uh * uy);
+
+    //     if (voxel ===32 && (ux===1||uy===1)) log({ voxel, vux, vuy, uvx, uvy });
+
+    //     return vec2.fromValues(uvx, uvy);
+    // }
 
     public static CreateFromUrl(
         url: string,
