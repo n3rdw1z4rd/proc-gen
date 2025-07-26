@@ -9,5 +9,4 @@ export * from './misc';
 export * from './noise';
 export * from './renderer'
 export * from './rng';
-export * from './simplex-noise';
 export * from './three';

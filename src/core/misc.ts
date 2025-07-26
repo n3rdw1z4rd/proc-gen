@@ -1,10 +1,20 @@
 import { clamp } from './math';
 
-export function isNullOrUndefined(target: any) {
+export function GetUrlParams(): KeyValue {
+    const params: KeyValue = {};
+
+    const url = new URLSearchParams(location.search);
+
+    for (const [key, value] of url.entries()) params[key] = value;
+
+    return params;
+}
+
+export function IsNullOrUndefined(target: any) {
     return (target === null || target === undefined);
 }
 
-export const getRedYellowGreenGradientHex = (min: number, max?: number): string => {
+export const GetRedYellowGreenGradientHex = (min: number, max?: number): string => {
     if (max === undefined) {
         max = min;
         min = 0;

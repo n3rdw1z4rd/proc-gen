@@ -27,56 +27,55 @@ TextureAtlas.CreateFromUrl(
         enableControls: true,
     });
 
-    // const fractalParams: FractalParams = {
-    //     octaves: 2,
-    //     frequency: 0.2,
-    //     persistence: 0.3,
-    //     amplitude: 1,
-    //     lacunarity: 2.2,
-    // };
+    const fractalParams: FractalParams = {
+        octaves: 1,
+        frequency: 0.01,
+        amplitude: 1,
+        lacunarity: 2.0,
+        persistence: 0.5,
+    };
 
-    // const newChunkFunction: NewChunkFunction = function (
-    //     this: VoxelMesh,
-    //     pos: vec3,
-    // ) {
-    //     const [cx, _cy, cz] = this.position.floor().toArray();
-    //     const [vx, vy, vz] = pos;
+    const newChunkFunction: NewChunkFunction = function (
+        this: VoxelMesh,
+        pos: vec3,
+    ) {
+        const [cx, _cy, cz] = this.position.floor().toArray();
+        const [vx, vy, vz] = pos;
 
-    //     const wx = cx + vx;
-    //     const wz = cz + vz;
+        const wx = cx + vx;
+        const wz = cz + vz;
 
-    //     const n = Noise.fractal2d(wx, wz, fractalParams);
-    //     const h = Math.floor(n * this.height);
+        const n = Noise.fractal2d(wx, wz, fractalParams);
+        const h = Math.floor(n * this.height);
 
-    //     return vy < h ? FILL_VOXEL : 0;
-    // };
+        return vy < h ? FILL_VOXEL : 0;
+    };
 
-    // const world = new VoxelWorld({
-    //     chunkSize: 8,
-    //     material: textureAtlas,
-    //     newChunkFunction,
-    // });
-
-    // world.viewDistance = 1;
-
-    // eng.scene.add(world);
-
-    // world.update([0, 0, 0]);
-
-    const voxelMesh = new VoxelMesh({
-        size: 3,
-        height: 1,
+    const world = new VoxelWorld({
+        chunkSize: 8,
         material: textureAtlas,
-        inverted: true,
+        newChunkFunction,
     });
 
-    voxelMesh.set([0, 0, 0], 1);
-    voxelMesh.set([1, 0, 0], 1);
-    voxelMesh.set([0, 0, 1], 1);
-    voxelMesh.set([0, 0, 2], 1);
-    voxelMesh.updateGeometry();
+    world.viewDistance = 1;
 
-    eng.scene.add(voxelMesh);
+    eng.scene.add(world);
+
+    world.update([0, 0, 0]);
+
+    // const voxelMesh = new VoxelMesh({
+    //     size: 3,
+    //     height: 1,
+    //     material: textureAtlas,
+    // });
+
+    // voxelMesh.set([0, 0, 0], 1);
+    // voxelMesh.set([1, 0, 0], 1);
+    // voxelMesh.set([0, 0, 1], 1);
+    // voxelMesh.set([0, 0, 2], 1);
+    // voxelMesh.updateGeometry();
+
+    // eng.scene.add(voxelMesh);
 
     eng.clock.run((_dt: number) => {
         eng.resize();

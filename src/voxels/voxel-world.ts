@@ -1,6 +1,6 @@
 import { Group } from 'three';
 import { VoxelMesh } from './voxel-mesh';
-import { xyz2i } from './utils';
+import { xyz2key } from './utils';
 import { vec2, vec3 } from 'gl-matrix';
 import { TextureAtlas } from '../core';
 
@@ -56,7 +56,7 @@ export class VoxelWorld extends Group {
 
     public updateChunk(pos: vec2) {
         const [px, pz] = pos;
-        const chunk = this._chunks.get(xyz2i([px, 0, pz]));
+        const chunk = this._chunks.get(xyz2key([px, 0, pz]));
         chunk?.updateGeometry();
     }
 
@@ -72,7 +72,7 @@ export class VoxelWorld extends Group {
 
         for (let xo = -this.viewDistance; xo <= this.viewDistance; xo++) {
             for (let zo = -this.viewDistance; zo <= this.viewDistance; zo++) {
-                const chunkIndex = xyz2i([x + xo, 0, z + zo]);
+                const chunkIndex = xyz2key([x + xo, 0, z + zo]);
 
                 if (!this._chunks.get(chunkIndex)) {
                     const cx = Math.floor((x + xo) * this.chunkSize);

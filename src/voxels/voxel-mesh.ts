@@ -1,5 +1,5 @@
 import { BufferAttribute, Mesh } from 'three';
-import { xyz2i } from './utils';
+import { xyz2key } from './utils';
 import { TextureAtlas } from '../core';
 import { vec3 } from 'gl-matrix';
 
@@ -30,12 +30,12 @@ export class VoxelMesh extends Mesh {
     }
 
     public get(position: vec3): number {
-        const voxel = this._voxels.get(xyz2i(position));
+        const voxel = this._voxels.get(xyz2key(position));
         return voxel ?? 0;
     }
 
     public set(position: vec3, value: number, updateGeometry: boolean = false) {
-        this._voxels.set(xyz2i(position), value);
+        this._voxels.set(xyz2key(position), value);
         if (updateGeometry === true) this.updateGeometry();
     }
 
@@ -43,7 +43,7 @@ export class VoxelMesh extends Mesh {
         for (let x = 0; x < this.size; ++x) {
             for (let y = 0; y < this.height; ++y) {
                 for (let z = 0; z < this.size; ++z) {
-                    this._voxels.set(xyz2i([x, y, z]), callback.bind(this)([x, y, z]));
+                    this._voxels.set(xyz2key([x, y, z]), callback.bind(this)([x, y, z]));
                 }
             }
         }

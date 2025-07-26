@@ -1,6 +1,6 @@
 import './core/css/main.css';
 
 // import './terrain-fun';
-// import './voxels';
+import './voxels';
 // import './buffer-geometry';
-import './shaders';
+// import './shaders';
